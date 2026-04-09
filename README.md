@@ -24,6 +24,8 @@ The robot performs two distinct phases:
 - **Robot:** TurtleBot 4
 - **Sensors:** RGB Camera (gesture detection, QR codes), LiDAR (SLAM/obstacle avoidance)
 
+---
+
 ## First-Time Setup (run once per machine)
 
 ### 1. Build the package
@@ -55,24 +57,24 @@ Each robot has a different domain ID and discovery server. Run this to get your 
 printf "<robot_name>" | robot-setup.sh
 ```
 
-For example:
+Example:
 ```bash
 printf "leatherback" | robot-setup.sh
 ```
 
-It will print something like:
+Output example:
 ```
 export ROS_DOMAIN_ID=6
 export ROS_DISCOVERY_SERVER=";;;;;;10.194.16.40:11811;"
 ```
 
-Use those values in all terminals below.
+Use those exact values in every terminal below.
 
 Valid robot names: `snapper`, `loggerhead`, `testudo`, `galapagos`, `terrapin`, `leatherback`, `hawksbill`, `matamata`, `softshell`
 
 ---
 
-### Step 2 — Terminal 1: Launch SLAM + RViz + all nodes
+### Terminal 1 — Launch SLAM + RViz + all nodes
 
 ```bash
 cd ~/robotics/ros2-topological-mapping-navigation/ros2_ws
@@ -80,13 +82,9 @@ source install/setup.bash
 ros2 launch topological_nav topological_nav.launch.xml robot_name:=<robot_name>
 ```
 
-Replace `<robot_name>` with your robot, e.g. `robot_name:=leatherback`
-
 ---
 
-### Step 3 — Terminal 2: Keyboard teleop (to drive and map)
-
-Use the exact domain ID and discovery server from Step 1:
+### Terminal 2 — Keyboard teleop
 
 ```bash
 unset ROS_LOCALHOST_ONLY
@@ -106,7 +104,7 @@ Teleop keys:
 
 ---
 
-### Step 4 — Terminal 3: View camera feed
+### Terminal 3 — Camera feed
 
 ```bash
 unset ROS_LOCALHOST_ONLY
@@ -121,18 +119,47 @@ Select `/oakd/rgb/preview/image_raw` from the dropdown.
 
 ---
 
-### Step 5 — Set up RViz to see the map
+### Terminal 4 — Gesture node (if not started by launch)
+
+```bash
+unset ROS_LOCALHOST_ONLY
+export ROS_DOMAIN_ID=<id>
+export ROS_DISCOVERY_SERVER="<server>"
+export ROS_SUPER_CLIENT=True
+ros2 daemon stop && ros2 daemon start
+source ~/robotics/ros2-topological-mapping-navigation/ros2_ws/install/setup.bash
+~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.gesture_node
+```
+
+---
+
+### Terminal 5 — Verify gestures are detected
+
+```bash
+unset ROS_LOCALHOST_ONLY
+export ROS_DOMAIN_ID=<id>
+export ROS_DISCOVERY_SERVER="<server>"
+export ROS_SUPER_CLIENT=True
+ros2 daemon stop && ros2 daemon start
+ros2 topic echo /gesture
+```
+
+Show fingers to the camera — you should see numbers printing:
+- `1`, `2`, `3` — finger count
+- `10` — wave gesture
+
+---
+
+### RViz setup
 
 In RViz:
 1. Set **Fixed Frame** to `map`
 2. Click **Add** → **By topic** → `/map` → **Map** → OK
 3. Click **Add** → **By topic** → `/scan` → **LaserScan** → OK
 
-Drive the robot around slowly to build the map. Cover the full area including all landmarks.
-
 ---
 
-### Step 6 — Save the map when done
+### Save the map when done driving
 
 ```bash
 unset ROS_LOCALHOST_ONLY
@@ -149,8 +176,29 @@ This saves `~/map.pgm` and `~/map.yaml`.
 
 ## Phase 2: Autonomous Tour (after mapping)
 
-1. Fill in the landmark coordinates in `ros2_ws/src/topological_nav/topological_nav/tour_manager.py` lines 17-23 using positions from the saved map
-2. Rebuild:
+### 1. Get landmark coordinates
+
+Drive the robot to each landmark and run:
+```bash
+ros2 topic echo /odom --once
+```
+
+Note the `x`, `y` values from `pose.pose.position` for each landmark.
+
+### 2. Fill in coordinates
+
+Edit `ros2_ws/src/topological_nav/topological_nav/tour_manager.py` lines 17-23:
+
+```python
+LANDMARK_POSITIONS = {
+    1: (x1, y1, theta1),
+    2: (x2, y2, theta2),
+    3: (x3, y3, theta3),
+}
+HOME_POSITION = (x0, y0, theta0)
+```
+
+### 3. Rebuild and launch
 
 ```bash
 cd ~/robotics/ros2-topological-mapping-navigation/ros2_ws
@@ -159,8 +207,9 @@ source install/setup.bash
 ros2 launch topological_nav topological_nav.launch.xml robot_name:=<robot_name>
 ```
 
-3. Show 1, 2, or 3 fingers to the camera to navigate to landmarks
-4. Wave to return home
+### 4. Test gestures
+
+Show 1, 2, or 3 fingers to the camera to navigate to landmarks. Wave to return home.
 
 ---
 
