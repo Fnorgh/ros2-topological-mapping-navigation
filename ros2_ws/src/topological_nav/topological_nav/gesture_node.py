@@ -1,3 +1,20 @@
+import sys
+import os
+
+# Add venv site-packages if a venv exists in the workspace root.
+# COLCON_PREFIX_PATH is set by sourcing install/setup.bash and points to
+# the install directory, so the workspace root is one level up.
+_colcon_prefix = os.environ.get('COLCON_PREFIX_PATH', '')
+if _colcon_prefix:
+    _ws_root = os.path.dirname(_colcon_prefix.split(':')[0])
+    _venv_sp = os.path.join(
+        _ws_root, 'venv', 'lib',
+        f'python{sys.version_info.major}.{sys.version_info.minor}',
+        'site-packages',
+    )
+    if os.path.isdir(_venv_sp):
+        sys.path.insert(0, _venv_sp)
+
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Int32
