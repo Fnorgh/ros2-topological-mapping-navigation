@@ -12,44 +12,28 @@ The robot performs two distinct phases:
 
 ## Hand Gesture Commands
 
-| Gesture   | Action                    |
-|-----------|---------------------------|
-| 1 finger  | Navigate to Landmark 1    |
-| 2 fingers | Navigate to Landmark 2    |
-| 3 fingers | Navigate to Landmark 3    |
-| Wave      | Return home               |
+| Gesture   | Action                 |
+|-----------|------------------------|
+| 1 finger  | Navigate to Landmark 1 |
+| 2 fingers | Navigate to Landmark 2 |
+| 3 fingers | Navigate to Landmark 3 |
+| Wave      | Return home            |
 
 ## Hardware
 
 - **Robot:** TurtleBot 4
 - **Sensors:** RGB Camera (gesture detection, QR codes), LiDAR (SLAM/obstacle avoidance)
 
-## System Architecture
+## First-Time Setup (run once per machine)
 
-```
-Input Layer
-%%% Camera → Gesture Recognition → Command Mapping
-
-Autonomous Execution
-%%% Receive Goal → Path Planning → Navigation → Obstacle Avoidance
-```
-
-The topological map is represented as a graph where:
-- **Nodes** — key navigation points and tour landmarks
-- **Edges** — traversable paths between nodes
-- **Landmarks** — nodes flagged as tour stops
-
-## First-Time Setup
-
-### 1. Clone and build
+### 1. Build the package
 
 ```bash
 cd ~/robotics/ros2-topological-mapping-navigation/ros2_ws
 colcon build --packages-select topological_nav
-source install/setup.bash
 ```
 
-### 2. Set up venv for mediapipe (gesture node)
+### 2. Set up venv for mediapipe
 
 ```bash
 cd ~/robotics/ros2-topological-mapping-navigation/ros2_ws
@@ -59,43 +43,57 @@ venv/bin/pip install -r requirements.txt
 touch venv/COLCON_IGNORE
 ```
 
-### 3. Prevent colcon from scanning venv on future builds
+---
+
+## Running the System
+
+### Step 1 — Find your robot's environment settings
+
+Each robot has a different domain ID and discovery server. Run this to get your robot's settings:
 
 ```bash
-touch ~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/COLCON_IGNORE
+printf "<robot_name>" | robot-setup.sh
 ```
 
-## How to Run
-
-### Every session — set ROS environment (run in every terminal)
-
+For example:
 ```bash
-unset ROS_LOCALHOST_ONLY
-export ROS_DOMAIN_ID=4
-export ROS_DISCOVERY_SERVER=";;;;10.194.16.39:11811;"
-export ROS_SUPER_CLIENT=True
-ros2 daemon stop && ros2 daemon start
+printf "leatherback" | robot-setup.sh
 ```
 
-### Phase 1: Mapping
+It will print something like:
+```
+export ROS_DOMAIN_ID=6
+export ROS_DISCOVERY_SERVER=";;;;;;10.194.16.40:11811;"
+```
 
-**Terminal 1 — Launch SLAM + RViz:**
+Use those values in all terminals below.
+
+Valid robot names: `snapper`, `loggerhead`, `testudo`, `galapagos`, `terrapin`, `leatherback`, `hawksbill`, `matamata`, `softshell`
+
+---
+
+### Step 2 — Terminal 1: Launch SLAM + RViz + all nodes
 
 ```bash
 cd ~/robotics/ros2-topological-mapping-navigation/ros2_ws
 source install/setup.bash
-ros2 launch topological_nav topological_nav.launch.xml robot_name:=galapagos
+ros2 launch topological_nav topological_nav.launch.xml robot_name:=<robot_name>
 ```
 
-Replace `galapagos` with your robot's name (valid names: `snapper`, `loggerhead`, `testudo`, `galapagos`, `terrapin`, `leatherback`, `hawksbill`, `matamata`, `softshell`).
+Replace `<robot_name>` with your robot, e.g. `robot_name:=leatherback`
 
-**Terminal 2 — Keyboard teleop:**
+---
+
+### Step 3 — Terminal 2: Keyboard teleop (to drive and map)
+
+Use the exact domain ID and discovery server from Step 1:
 
 ```bash
 unset ROS_LOCALHOST_ONLY
-export ROS_DOMAIN_ID=4
-export ROS_DISCOVERY_SERVER=";;;;10.194.16.39:11811;"
+export ROS_DOMAIN_ID=<id>
+export ROS_DISCOVERY_SERVER="<server>"
 export ROS_SUPER_CLIENT=True
+ros2 daemon stop && ros2 daemon start
 ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true
 ```
 
@@ -106,35 +104,65 @@ Teleop keys:
 - `l` — turn right
 - `k` — stop
 
-**In RViz:**
-1. Click **Add** → **By topic** → `/map` → **Map** → OK
-2. Click **Add** → **By topic** → `/scan` → **LaserScan** → OK
-3. Set **Fixed Frame** to `map`
+---
 
-Drive the robot around slowly to build the map. Cover the full area including all landmarks.
-
-**Save the map when done:**
+### Step 4 — Terminal 3: View camera feed
 
 ```bash
 unset ROS_LOCALHOST_ONLY
-export ROS_DOMAIN_ID=4
-export ROS_DISCOVERY_SERVER=";;;;10.194.16.39:11811;"
+export ROS_DOMAIN_ID=<id>
+export ROS_DISCOVERY_SERVER="<server>"
 export ROS_SUPER_CLIENT=True
+ros2 daemon stop && ros2 daemon start
+ros2 run rqt_image_view rqt_image_view
+```
+
+Select `/oakd/rgb/preview/image_raw` from the dropdown.
+
+---
+
+### Step 5 — Set up RViz to see the map
+
+In RViz:
+1. Set **Fixed Frame** to `map`
+2. Click **Add** → **By topic** → `/map` → **Map** → OK
+3. Click **Add** → **By topic** → `/scan` → **LaserScan** → OK
+
+Drive the robot around slowly to build the map. Cover the full area including all landmarks.
+
+---
+
+### Step 6 — Save the map when done
+
+```bash
+unset ROS_LOCALHOST_ONLY
+export ROS_DOMAIN_ID=<id>
+export ROS_DISCOVERY_SERVER="<server>"
+export ROS_SUPER_CLIENT=True
+ros2 daemon stop && ros2 daemon start
 ros2 run nav2_map_server map_saver_cli -f ~/map
 ```
 
 This saves `~/map.pgm` and `~/map.yaml`.
 
-### Phase 2: Autonomous Tour (after mapping)
+---
 
-Fill in the landmark coordinates in [tour_manager.py](ros2_ws/src/topological_nav/topological_nav/tour_manager.py) using positions from the saved map, then rebuild and launch the full system:
+## Phase 2: Autonomous Tour (after mapping)
+
+1. Fill in the landmark coordinates in `ros2_ws/src/topological_nav/topological_nav/tour_manager.py` lines 17-23 using positions from the saved map
+2. Rebuild:
 
 ```bash
 cd ~/robotics/ros2-topological-mapping-navigation/ros2_ws
 colcon build --packages-select topological_nav
 source install/setup.bash
-ros2 launch topological_nav topological_nav.launch.xml robot_name:=galapagos
+ros2 launch topological_nav topological_nav.launch.xml robot_name:=<robot_name>
 ```
+
+3. Show 1, 2, or 3 fingers to the camera to navigate to landmarks
+4. Wave to return home
+
+---
 
 ## Paradigm
 
