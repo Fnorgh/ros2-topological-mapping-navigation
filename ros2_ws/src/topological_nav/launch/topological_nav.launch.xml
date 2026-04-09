@@ -1,9 +1,9 @@
 <launch>
   <arg name="robot_name" default="" description="TurtleBot name printed on the robot"/>
 
-  <!-- Keyboard teleop (opens in its own terminal) -->
+  <!-- Keyboard teleop -->
   <executable
-    cmd='gnome-terminal -- bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true; exec bash"'
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true"'
     output="screen"/>
 
   <!-- TurtleBot4 SLAM -->
