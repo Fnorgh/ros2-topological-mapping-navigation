@@ -1,0 +1,48 @@
+<launch>
+  <arg name="robot_name" default="" description="TurtleBot name printed on the robot"/>
+
+  <!-- Kill joystick teleop if running -->
+  <executable
+    cmd='bash -lc "pkill -f teleop_twist_joy 2>/dev/null || true"'
+    output="screen"/>
+
+  <!-- Keyboard teleop (manual mapping phase — opens in its own terminal) -->
+  <executable
+    cmd='gnome-terminal -- bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true --remap /cmd_vel:=/teleop_cmd_vel; exec bash"'
+    output="screen"/>
+
+  <!-- Reactive controller (obstacle avoidance during manual mapping) -->
+  <executable
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; ros2 run topological_nav reactive_controller"'
+    output="screen"/>
+
+  <!-- TurtleBot4 SLAM -->
+  <executable
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; ros2 launch turtlebot4_navigation slam.launch.py"'
+    output="screen"/>
+
+  <!-- RViz -->
+  <executable
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; ros2 launch turtlebot4_viz view_robot.launch.py"'
+    output="screen"/>
+
+  <!-- Hand gesture recognition -->
+  <executable
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; ros2 run topological_nav gesture_node"'
+    output="screen"/>
+
+  <!-- QR code scanner -->
+  <executable
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; ros2 run topological_nav qr_node"'
+    output="screen"/>
+
+  <!-- Text-to-speech -->
+  <executable
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; ros2 run topological_nav tts_node"'
+    output="screen"/>
+
+  <!-- Tour manager (main state machine) -->
+  <executable
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; ros2 run topological_nav tour_manager"'
+    output="screen"/>
+</launch>
