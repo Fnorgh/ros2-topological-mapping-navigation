@@ -10,4 +10,24 @@
   <executable
     cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ros2 launch turtlebot4_viz view_robot.launch.py"'
     output="screen"/>
+
+  <!-- Hand gesture recognition (uses venv for mediapipe) -->
+  <executable
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.gesture_node"'
+    output="screen"/>
+
+  <!-- QR code scanner -->
+  <executable
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ros2 run topological_nav qr_node"'
+    output="screen"/>
+
+  <!-- Text-to-speech -->
+  <executable
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ros2 run topological_nav tts_node"'
+    output="screen"/>
+
+  <!-- Tour manager (main state machine) -->
+  <executable
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ros2 run topological_nav tour_manager"'
+    output="screen"/>
 </launch>
