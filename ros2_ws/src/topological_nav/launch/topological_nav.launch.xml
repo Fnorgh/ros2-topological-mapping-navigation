@@ -26,9 +26,9 @@
     cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; ros2 launch turtlebot4_viz view_robot.launch.py"'
     output="screen"/>
 
-  <!-- Hand gesture recognition -->
+  <!-- Hand gesture recognition (uses venv for mediapipe) -->
   <executable
-    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; ros2 run topological_nav gesture_node"'
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; ~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.gesture_node"'
     output="screen"/>
 
   <!-- QR code scanner -->
