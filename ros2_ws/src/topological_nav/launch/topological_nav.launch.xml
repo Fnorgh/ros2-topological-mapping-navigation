@@ -1,11 +1,6 @@
 <launch>
   <arg name="robot_name" default="" description="TurtleBot name printed on the robot"/>
 
-  <!-- Keyboard teleop -->
-  <executable
-    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true"'
-    output="screen"/>
-
   <!-- TurtleBot4 SLAM -->
   <executable
     cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; ros2 launch turtlebot4_navigation slam.launch.py"'
