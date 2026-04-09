@@ -3,11 +3,11 @@
 
   <!-- TurtleBot4 SLAM -->
   <executable
-    cmd='bash -lc "unset ROS_LOCALHOST_ONLY &amp;&amp; printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; ros2 launch turtlebot4_navigation slam.launch.py"'
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ros2 launch turtlebot4_navigation slam.launch.py"'
     output="screen"/>
 
   <!-- RViz -->
   <executable
-    cmd='bash -lc "unset ROS_LOCALHOST_ONLY &amp;&amp; printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; ros2 launch turtlebot4_viz view_robot.launch.py"'
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ros2 launch turtlebot4_viz view_robot.launch.py"'
     output="screen"/>
 </launch>
