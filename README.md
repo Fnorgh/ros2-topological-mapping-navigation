@@ -42,12 +42,39 @@ cd ~/robotics/ros2-topological-mapping-navigation/ros2_ws
 pip install --user --break-system-packages virtualenv
 ~/.local/bin/virtualenv --system-site-packages venv
 venv/bin/pip install -r requirements.txt
+venv/bin/pip install ultralytics
+venv/bin/pip install "numpy<2"
 touch venv/COLCON_IGNORE
 ```
 
 ---
 
-## Running the System
+## Quick Start — Shell Scripts
+
+Edit the top 3 lines in each script for your robot before running:
+
+```bash
+ROBOT_NAME="snapper"
+ROS_DOMAIN_ID="4"
+ROS_DISCOVERY_SERVER=";;;;10.194.16.39:11811;"
+```
+
+Make executable (once):
+
+```bash
+chmod +x ~/robotics/ros2-topological-mapping-navigation/start_mapping.sh
+chmod +x ~/robotics/ros2-topological-mapping-navigation/start_person_follow.sh
+```
+
+| Script | Purpose | Opens |
+|--------|---------|-------|
+| `./start_mapping.sh` | Phase 1 — build map, drive around | SLAM + RViz + Teleop |
+| `./start_person_follow.sh` | Phase 2 — detect and follow person | Person follow + Speak listener |
+| `./start.sh` | All nodes at once | Everything |
+
+---
+
+## Running the System (manual)
 
 ### Step 1 — Find your robot's environment settings
 
@@ -213,38 +240,37 @@ Show 1, 2, or 3 fingers to the camera to navigate to landmarks. Wave to return h
 
 ---
 
----
-
 ## Person Follow Mode
 
 The robot detects people via the OAK-D camera (YOLOv8n) and drives toward them, announcing "feet detected" on the connecting computer.
 
-### Step 1 — Build (robot)
+### Quick start (recommended)
 
 ```bash
-cd ~/robotics/ros2-topological-mapping-navigation/ros2_ws
-colcon build --packages-select topological_nav
-source install/setup.bash
+~/robotics/ros2-topological-mapping-navigation/start_person_follow.sh
 ```
 
-### Step 2 — Start the person follow node (robot)
+### Manual start
+
+#### Step 1 — Start the person follow launch (robot)
 
 ```bash
-unset ROS_LOCALHOST_ONLY && export ROS_DOMAIN_ID=4 && export ROS_DISCOVERY_SERVER=";;;;10.194.16.39:11811;" && export ROS_SUPER_CLIENT=True
-~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.person_follow_node
+unset ROS_LOCALHOST_ONLY && export ROS_DOMAIN_ID=<id> && export ROS_DISCOVERY_SERVER="<server>" && export ROS_SUPER_CLIENT=True
+source ~/robotics/ros2-topological-mapping-navigation/ros2_ws/install/setup.bash
+ros2 launch topological_nav person_follow.launch.xml robot_name:=<robot_name>
 ```
 
-### Step 3 — Start the speak listener (connecting computer — plays audio here)
+#### Step 2 — Start the speak listener (connecting computer — plays audio here)
 
 ```bash
 source ~/robotics/ros2-topological-mapping-navigation/ros2_ws/install/setup.bash
 python3 ~/robotics/ros2-topological-mapping-navigation/ros2_ws/src/topological_nav/topological_nav/speak_listener.py
 ```
 
-### Step 4 — Enable following (any terminal with env vars set)
+#### Step 3 — Enable following
 
 ```bash
-unset ROS_LOCALHOST_ONLY && export ROS_DOMAIN_ID=4 && export ROS_DISCOVERY_SERVER=";;;;10.194.16.39:11811;" && export ROS_SUPER_CLIENT=True
+unset ROS_LOCALHOST_ONLY && export ROS_DOMAIN_ID=<id> && export ROS_DISCOVERY_SERVER="<server>" && export ROS_SUPER_CLIENT=True
 ros2 topic pub /person_follow_active std_msgs/Bool "data: true"
 ```
 
