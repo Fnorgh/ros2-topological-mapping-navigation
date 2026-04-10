@@ -17,7 +17,7 @@ import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import TwistStamped
 from sensor_msgs.msg import Image
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, String
 from cv_bridge import CvBridge
 from ultralytics import YOLO
 
@@ -43,7 +43,8 @@ class PersonFollowNode(Node):
         self.model = YOLO('yolov8n.pt')
         self.get_logger().info('YOLOv8n loaded')
 
-        self.cmd_pub = self.create_publisher(TwistStamped, '/cmd_vel', 10)
+        self.cmd_pub   = self.create_publisher(TwistStamped, '/cmd_vel', 10)
+        self.speak_pub = self.create_publisher(String, '/speak', 10)
 
         self.create_subscription(
             Image, '/oakd/rgb/preview/image_raw', self.image_callback, 10)
@@ -52,6 +53,8 @@ class PersonFollowNode(Node):
         # e.g.:  ros2 topic pub /person_follow_active std_msgs/Bool "data: true"
         self.create_subscription(
             Bool, '/person_follow_active', self.active_callback, 10)
+
+        self.person_visible = False  # tracks detection state across frames
 
         self.get_logger().info(
             'Person follow node ready – waiting on /person_follow_active')
@@ -82,10 +85,18 @@ class PersonFollowNode(Node):
 
         if box is None:
             self.get_logger().info('No person detected')
+            self.person_visible = False
             cmd = TwistStamped()
             cmd.twist.angular.z = SEARCH_TURN_SPEED
             self.cmd_pub.publish(cmd)
             return
+
+        # Announce on first detection
+        if not self.person_visible:
+            self.person_visible = True
+            msg = String()
+            msg.data = 'feet detected'
+            self.speak_pub.publish(msg)
 
         x1, y1, x2, y2 = box
         cx = (x1 + x2) / 2.0
