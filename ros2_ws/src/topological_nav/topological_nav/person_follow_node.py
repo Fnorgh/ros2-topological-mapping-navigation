@@ -24,7 +24,7 @@ from ultralytics import YOLO
 # ── Proportional control ──────────────────────────────────────────────────────
 KP_ANGULAR       = 1.5    # rad/s per normalised pixel offset
 LINEAR_SPEED     = 0.15   # m/s forward when person is not yet close
-STOP_HEIGHT_RATIO = 0.45  # stop driving when person bbox height > 45 % of frame
+STOP_HEIGHT_RATIO = 0.80  # stop driving when person bbox height > 80 % of frame
 MIN_CONF         = 0.25   # minimum YOLO detection confidence
 
 # Slow rotation used to search when no person is visible
