@@ -56,7 +56,7 @@ class PersonFollowNode(Node):
 
         self.person_visible    = False
         self.last_announce_time = 0.0
-        self.ANNOUNCE_INTERVAL  = 0.5  # seconds between repeated announcements
+        self.ANNOUNCE_INTERVAL  = 1  # seconds between repeated announcements
 
         self.get_logger().info(
             'Person follow node ready – waiting on /person_follow_active')
