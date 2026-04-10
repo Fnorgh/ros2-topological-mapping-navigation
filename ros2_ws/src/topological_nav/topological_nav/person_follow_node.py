@@ -54,7 +54,9 @@ class PersonFollowNode(Node):
         self.create_subscription(
             Bool, '/person_follow_active', self.active_callback, 10)
 
-        self.person_visible = False  # tracks detection state across frames
+        self.person_visible    = False
+        self.last_announce_time = 0.0
+        self.ANNOUNCE_INTERVAL  = 5.0  # seconds between repeated announcements
 
         self.get_logger().info(
             'Person follow node ready – waiting on /person_follow_active')
@@ -91,9 +93,12 @@ class PersonFollowNode(Node):
             self.cmd_pub.publish(cmd)
             return
 
-        # Announce on first detection
-        if not self.person_visible:
-            self.person_visible = True
+        # Announce on first detection and every ANNOUNCE_INTERVAL seconds after
+        import time
+        now = time.time()
+        if not self.person_visible or (now - self.last_announce_time) >= self.ANNOUNCE_INTERVAL:
+            self.person_visible     = True
+            self.last_announce_time = now
             msg = String()
             msg.data = 'feet detected'
             self.speak_pub.publish(msg)
