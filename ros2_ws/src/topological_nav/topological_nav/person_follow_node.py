@@ -25,7 +25,7 @@ from ultralytics import YOLO
 KP_ANGULAR       = 1.5    # rad/s per normalised pixel offset
 LINEAR_SPEED     = 0.15   # m/s forward when person is not yet close
 STOP_HEIGHT_RATIO = 0.45  # stop driving when person bbox height > 45 % of frame
-MIN_CONF         = 0.45   # minimum YOLO detection confidence
+MIN_CONF         = 0.25   # minimum YOLO detection confidence
 
 # Slow rotation used to search when no person is visible
 SEARCH_TURN_SPEED = 0.0   # rad/s
@@ -81,7 +81,7 @@ class PersonFollowNode(Node):
         box = self._largest_person(results)
 
         if box is None:
-            # No person visible – rotate slowly to search
+            self.get_logger().info('No person detected')
             cmd = TwistStamped()
             cmd.twist.angular.z = SEARCH_TURN_SPEED
             self.cmd_pub.publish(cmd)
@@ -104,7 +104,7 @@ class PersonFollowNode(Node):
         cmd.twist.angular.z = angular_z
         self.cmd_pub.publish(cmd)
 
-        self.get_logger().debug(
+        self.get_logger().info(
             f'offset={offset:+.2f}  h_ratio={height_ratio:.2f}  '
             f'lin={linear_x:.2f}  ang={angular_z:+.2f}')
 
