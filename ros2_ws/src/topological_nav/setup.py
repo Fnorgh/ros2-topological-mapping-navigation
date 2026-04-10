@@ -31,6 +31,7 @@ setup(
             'qr_node             = topological_nav.qr_node:main',
             'tts_node            = topological_nav.tts_node:main',
             'person_follow_node  = topological_nav.person_follow_node:main',
+            'speak_listener      = topological_nav.speak_listener:main',
         ],
     },
 )
