@@ -12,6 +12,8 @@ setup(
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + '/launch', [
             'launch/topological_nav.launch.xml',
+            'launch/mapping.launch.xml',
+            'launch/person_follow.launch.xml',
         ]),
     ],
     install_requires=['setuptools'],
