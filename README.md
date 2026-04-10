@@ -213,6 +213,48 @@ Show 1, 2, or 3 fingers to the camera to navigate to landmarks. Wave to return h
 
 ---
 
+---
+
+## Person Follow Mode
+
+The robot detects people via the OAK-D camera (YOLOv8n) and drives toward them, announcing "feet detected" on the connecting computer.
+
+### Step 1 — Build (robot)
+
+```bash
+cd ~/robotics/ros2-topological-mapping-navigation/ros2_ws
+colcon build --packages-select topological_nav
+source install/setup.bash
+```
+
+### Step 2 — Start the person follow node (robot)
+
+```bash
+unset ROS_LOCALHOST_ONLY && export ROS_DOMAIN_ID=4 && export ROS_DISCOVERY_SERVER=";;;;10.194.16.39:11811;" && export ROS_SUPER_CLIENT=True
+~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.person_follow_node
+```
+
+### Step 3 — Start the speak listener (connecting computer — plays audio here)
+
+```bash
+source ~/robotics/ros2-topological-mapping-navigation/ros2_ws/install/setup.bash
+python3 ~/robotics/ros2-topological-mapping-navigation/ros2_ws/src/topological_nav/topological_nav/speak_listener.py
+```
+
+### Step 4 — Enable following (any terminal with env vars set)
+
+```bash
+unset ROS_LOCALHOST_ONLY && export ROS_DOMAIN_ID=4 && export ROS_DISCOVERY_SERVER=";;;;10.194.16.39:11811;" && export ROS_SUPER_CLIENT=True
+ros2 topic pub /person_follow_active std_msgs/Bool "data: true"
+```
+
+To stop following:
+```bash
+ros2 topic pub --once /person_follow_active std_msgs/Bool "data: false"
+```
+
+---
+
 ## Paradigm
 
 This project follows a hybrid robotic paradigm:
