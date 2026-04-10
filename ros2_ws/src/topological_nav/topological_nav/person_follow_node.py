@@ -38,6 +38,8 @@ class PersonFollowNode(Node):
 
         self.bridge = CvBridge()
         self.active = False
+        self._frame_count = 0
+        self.PROCESS_EVERY = 3  # only run YOLO on every Nth frame
 
         # YOLOv8n – downloads weights (~6 MB) on first run
         self.model = YOLO('yolov8n.pt')
@@ -78,12 +80,24 @@ class PersonFollowNode(Node):
         if not self.active:
             return
 
+        self._frame_count += 1
+        if self._frame_count % self.PROCESS_EVERY != 0:
+            return
+
         frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
         h, w = frame.shape[:2]
 
+        # Resize to speed up inference
+        small = frame[::2, ::2]  # half resolution
+
         # Detect people only (COCO class 0)
-        results = self.model(frame, classes=[0], conf=MIN_CONF, verbose=False)
+        results = self.model(small, classes=[0], conf=MIN_CONF, verbose=False)
         box = self._largest_person(results)
+
+        # Scale box coords back to original frame size
+        if box is not None:
+            x1, y1, x2, y2 = box
+            box = (x1 * 2, y1 * 2, x2 * 2, y2 * 2)
 
         if box is None:
             self.get_logger().info('No person detected')
