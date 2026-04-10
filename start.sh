@@ -34,15 +34,7 @@ exec bash"
 
 sleep 3
 
-# Terminal 2: Person follow node (uses venv for ultralytics)
-gnome-terminal --title="Person Follow" -- bash -c "
-$ROS_ENV
-$VENV -m topological_nav.person_follow_node
-exec bash"
-
-sleep 2
-
-# Terminal 3: Enable person following
+# Terminal 2: Enable person following
 gnome-terminal --title="Enable Follow" -- bash -c "
 $ROS_ENV
 echo 'Publishing person_follow_active...'
