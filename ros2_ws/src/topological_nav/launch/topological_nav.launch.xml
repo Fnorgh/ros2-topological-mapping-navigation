@@ -26,6 +26,11 @@
     cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ros2 run topological_nav tts_node"'
     output="screen"/>
 
+  <!-- Person follow (YOLOv8n on OAK-D feed, enable via /person_follow_active) -->
+  <executable
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.person_follow_node"'
+    output="screen"/>
+
   <!-- Tour manager (main state machine) -->
   <executable
     cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ros2 run topological_nav tour_manager"'
