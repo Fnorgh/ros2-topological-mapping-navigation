@@ -31,7 +31,23 @@ ros2 daemon stop || true
 ros2 daemon start
 
 echo "==> Checking remote camera topic on this computer..."
-if ! timeout 8s ros2 topic echo --once /oakd/rgb/preview/image_raw > /dev/null 2>&1; then
+sleep 2
+
+camera_ready=false
+for attempt in 1 2 3; do
+  echo "==> Camera check attempt $attempt/3..."
+
+  if ros2 topic info -v /oakd/rgb/preview/image_raw 2>/dev/null | grep -Eq 'Publisher count: [1-9][0-9]*'; then
+    if timeout 12s ros2 topic echo --once /oakd/rgb/preview/image_raw > /dev/null 2>&1; then
+      camera_ready=true
+      break
+    fi
+  fi
+
+  sleep 3
+done
+
+if [ "$camera_ready" != true ]; then
   echo "ERROR: This computer cannot see /oakd/rgb/preview/image_raw for robot '$ROBOT'."
   echo "       The robot may be on a different domain/discovery server, or the camera topic is not reaching this machine."
   echo "       Verify the robot name and network first, then try:"
@@ -40,7 +56,7 @@ if ! timeout 8s ros2 topic echo --once /oakd/rgb/preview/image_raw > /dev/null 2
   echo "       export ROS_DISCOVERY_SERVER=\"$ROS_DISCOVERY_SERVER\""
   echo "       export ROS_SUPER_CLIENT=True"
   echo "       ros2 daemon stop && ros2 daemon start"
-  echo "       ros2 topic list | grep oakd"
+  echo "       ros2 topic info -v /oakd/rgb/preview/image_raw"
   exit 1
 fi
 echo "==> Camera stream is visible from this computer."
