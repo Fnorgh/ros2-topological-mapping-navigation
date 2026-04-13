@@ -1,17 +1,19 @@
 <launch>
+  <arg name="robot_name" default="" description="TurtleBot name printed on the robot"/>
+
   <executable
-    cmd='bash -lc "unset ROS_LOCALHOST_ONLY &amp;&amp; source ~/robotics/ros2-topological-mapping-navigation/ros2_ws/install/setup.bash &amp;&amp; ~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.person_follow_node"'
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; source ~/robotics/ros2-topological-mapping-navigation/ros2_ws/install/setup.bash &amp;&amp; ~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.person_follow_node"'
     output="screen"/>
 
   <executable
-    cmd='bash -lc "unset ROS_LOCALHOST_ONLY &amp;&amp; source ~/robotics/ros2-topological-mapping-navigation/ros2_ws/install/setup.bash &amp;&amp; ~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.gesture_node"'
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; source ~/robotics/ros2-topological-mapping-navigation/ros2_ws/install/setup.bash &amp;&amp; ~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.gesture_node"'
     output="screen"/>
 
   <executable
-    cmd='bash -lc "unset ROS_LOCALHOST_ONLY &amp;&amp; source ~/robotics/ros2-topological-mapping-navigation/ros2_ws/install/setup.bash &amp;&amp; ~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.qr_node"'
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; source ~/robotics/ros2-topological-mapping-navigation/ros2_ws/install/setup.bash &amp;&amp; ~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.qr_node"'
     output="screen"/>
 
   <executable
-    cmd='bash -lc "unset ROS_LOCALHOST_ONLY &amp;&amp; source ~/robotics/ros2-topological-mapping-navigation/ros2_ws/install/setup.bash &amp;&amp; ~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.follow_manager"'
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; source ~/robotics/ros2-topological-mapping-navigation/ros2_ws/install/setup.bash &amp;&amp; ~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.follow_manager"'
     output="screen"/>
 </launch>

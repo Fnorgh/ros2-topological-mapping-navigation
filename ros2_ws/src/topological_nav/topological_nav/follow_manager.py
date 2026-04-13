@@ -24,23 +24,24 @@ class FollowManager(Node):
         self.create_subscription(Int32, '/gesture', self.gesture_callback, 10)
         self.create_subscription(Bool, '/person_follow_timeout', self.timeout_callback, 10)
 
-        # Start in YOLO-follow mode. Gesture mode is only enabled after timeout.
-        self.following = True
-        self.gesture_mode = False
+        # Match the older workflow:
+        # start idle, listen for gesture 5, then switch to YOLO follow mode.
+        self.following = False
+        self.gesture_mode = True
 
         self._startup_count = 0
         self._startup_timer = self.create_timer(1.0, self._startup_publish)
         self.create_timer(3.0, self._status_log)
 
         self.get_logger().info(
-            'Follow manager ready - FOLLOWING. If no person is seen for 5 seconds, gesture mode will start.'
+            'Follow manager ready - IDLE. Show 5 fingers to start following.'
         )
 
     def _status_log(self):
         if self.following:
             state = 'FOLLOWING - YOLO active, gesture mode disabled'
         else:
-            state = 'GESTURE MODE - show 5 fingers to resume following'
+            state = 'IDLE/GESTURE MODE - show 5 fingers to start following'
         self.get_logger().info(f'State: {state}')
 
     def _startup_publish(self):
@@ -59,9 +60,9 @@ class FollowManager(Node):
             self.following = True
             self.gesture_mode = False
             self._publish_state()
-            self.get_logger().info('Gesture 5 -> FOLLOWING resumed')
+            self.get_logger().info('Gesture 5 -> FOLLOWING started')
         elif gesture != GESTURE_NONE:
-            self.get_logger().info(f'Gesture {gesture} ignored - show 5 fingers to resume following')
+            self.get_logger().info(f'Gesture {gesture} ignored - show 5 fingers to start following')
 
     def timeout_callback(self, msg: Bool):
         if not msg.data or not self.following:
