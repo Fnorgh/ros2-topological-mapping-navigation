@@ -51,25 +51,26 @@ class GestureNode(Node):
 
         self._following = False
 
-        # static_image_mode=False uses cheap tracking between detections
+        # Running on local computer — use static mode for reliable per-frame detection
         self.hands = mp.solutions.hands.Hands(
-            static_image_mode=False,
+            static_image_mode=True,
             max_num_hands=1,
-            min_detection_confidence=0.3,
-            min_tracking_confidence=0.3,
+            min_detection_confidence=0.5,
+            min_tracking_confidence=0.5,
         )
 
-        # Process rate: 1 fps when idle, 3 fps when following (YOLO is also running)
+        # Process at ~5 fps — fast enough to feel responsive on a local machine
         self._last_process    = 0.0
+        self.PROCESS_INTERVAL = 0.2
 
-        # Wave detection: track wrist x over a short history
+        # Wave detection
         self.wrist_x_history = []
-        self.WAVE_WINDOW      = 5     # reduced (fewer frames at 1 fps)
-        self.WAVE_THRESHOLD   = 0.18  # normalized image width
+        self.WAVE_WINDOW      = 8
+        self.WAVE_THRESHOLD   = 0.18
 
-        # Debounce: gesture must be consistent for N checks before publishing
+        # Debounce: gesture must be consistent for N frames before publishing
         self.gesture_buffer = []
-        self.BUFFER_LEN     = 3      # reduced to match lower frame rate
+        self.BUFFER_LEN     = 4
 
         # Cooldown so one gesture doesn't fire repeatedly
         self.last_published      = GESTURE_NONE
@@ -87,14 +88,14 @@ class GestureNode(Node):
 
     def image_callback(self, msg):
         now = time.time()
-        # Back off to every 3 s while YOLO is also running; 1 s when idle
-        interval = 3.0 if self._following else 1.0
-        if now - self._last_process < interval:
+        if now - self._last_process < self.PROCESS_INTERVAL:
             return
         self._last_process = now
 
         frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='rgb8')
+        frame.flags.writeable = False   # required by MediaPipe
         result = self.hands.process(frame)
+        frame.flags.writeable = True
 
         gesture = GESTURE_NONE
         if result.multi_hand_landmarks:
