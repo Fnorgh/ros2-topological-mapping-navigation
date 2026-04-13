@@ -84,9 +84,17 @@ class GestureNode(Node):
             if self._is_wave(lm):
                 gesture = GESTURE_WAVE
             else:
-                count = self._count_fingers(lm)
-                if count in (1, 2, 3, 5):
-                    gesture = count
+                fingers_up = self._fingers_up(lm)
+                total = self._count_fingers(lm)
+                self.get_logger().info(
+                    f'Hand detected: fingers_up={fingers_up} total={total}',
+                    throttle_duration_sec=0.5)
+                # Open hand: all 4 main fingers extended → GESTURE_FIVE
+                # (thumb detection is skipped — unreliable across hand orientations)
+                if fingers_up == 4:
+                    gesture = GESTURE_FIVE
+                elif total in (1, 2, 3):
+                    gesture = total
 
         self._update_buffer(gesture)
 
@@ -94,13 +102,17 @@ class GestureNode(Node):
     # Helpers
     # ------------------------------------------------------------------
 
-    def _count_fingers(self, lm):
-        """Count extended fingers using tip-vs-PIP y comparison."""
-        count = sum(
+    def _fingers_up(self, lm):
+        """Count the 4 main fingers (index–pinky) that are extended."""
+        return sum(
             1 for tip, pip in zip(FINGER_TIPS, FINGER_PIPS)
             if lm[tip].y < lm[pip].y
         )
-        # Thumb: use x comparison (left hand mirrored)
+
+    def _count_fingers(self, lm):
+        """Count extended fingers including thumb (thumb uses x comparison)."""
+        count = self._fingers_up(lm)
+        # Thumb: works for left hand / mirrored image
         if lm[4].x < lm[3].x:
             count += 1
         return count
