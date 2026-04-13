@@ -3,15 +3,11 @@ import sys
 import time
 
 # Add venv site-packages if a venv exists in the workspace root.
-# COLCON_PREFIX_PATH is set by sourcing install/setup.bash and points to
-# the install directory, so the workspace root is one level up.
 _colcon_prefix = os.environ.get('COLCON_PREFIX_PATH', '')
 if _colcon_prefix:
     _ws_root = os.path.dirname(_colcon_prefix.split(':')[0])
     _venv_sp = os.path.join(
-        _ws_root,
-        'venv',
-        'lib',
+        _ws_root, 'venv', 'lib',
         f'python{sys.version_info.major}.{sys.version_info.minor}',
         'site-packages',
     )
@@ -23,11 +19,10 @@ import mediapipe as mp
 import rclpy
 from cv_bridge import CvBridge
 from rclpy.node import Node
-from rclpy.qos import qos_profile_sensor_data
+from rclpy.qos import QoSDurabilityPolicy, QoSHistoryPolicy, QoSProfile, QoSReliabilityPolicy, qos_profile_sensor_data
 from sensor_msgs.msg import Image
 from std_msgs.msg import Bool, Int32
 
-# Gesture codes published on /gesture
 GESTURE_NONE = 0
 GESTURE_ONE = 1
 GESTURE_TWO = 2
@@ -35,9 +30,15 @@ GESTURE_THREE = 3
 GESTURE_FIVE = 5
 GESTURE_WAVE = 10
 
-# Finger tip and PIP landmark IDs (MediaPipe hand model)
-FINGER_TIPS = [8, 12, 16, 20]  # index, middle, ring, pinky
+FINGER_TIPS = [8, 12, 16, 20]
 FINGER_PIPS = [6, 10, 14, 18]
+
+STATE_QOS = QoSProfile(
+    history=QoSHistoryPolicy.KEEP_LAST,
+    depth=1,
+    reliability=QoSReliabilityPolicy.RELIABLE,
+    durability=QoSDurabilityPolicy.TRANSIENT_LOCAL,
+)
 
 
 class GestureNode(Node):
@@ -46,42 +47,28 @@ class GestureNode(Node):
 
         self.pub = self.create_publisher(Int32, '/gesture', 10)
         self.bridge = CvBridge()
-        default_image_topics = [
-            '/oakd/rgb/preview/image_raw',
-            '/oakd/rgb/image_raw',
-            '/camera/color/image_raw',
-            '/color/image_raw',
-        ]
-        self.image_topic = self.declare_parameter(
-            'image_topic', '/oakd/rgb/preview/image_raw'
-        ).value
-        self.image_topics = list(
-            self.declare_parameter('image_topics', default_image_topics).value
-        )
-        if self.image_topic and self.image_topic not in self.image_topics:
-            self.image_topics.insert(0, self.image_topic)
-        self.image_topics = list(dict.fromkeys(self.image_topics))
 
-        self._image_subs = []
-        for topic in self.image_topics:
-            self._image_subs.append(
-                self.create_subscription(
-                    Image,
-                    topic,
-                    lambda msg, topic=topic: self.image_callback(msg, topic),
-                    qos_profile_sensor_data,
-                )
-            )
         self.create_subscription(
-            Bool,
-            '/person_follow_active',
-            self._follow_callback,
-            10,
+            Image, '/oakd/rgb/preview/image_raw', self.image_callback, qos_profile_sensor_data
+        )
+        self.create_subscription(
+            Bool, '/gesture_mode_enabled', self.mode_callback, STATE_QOS
         )
 
-        self._following = False
+        self.enabled = False
+        self._last_process = 0.0
+        self.PROCESS_INTERVAL = 0.25
 
-        # Track between frames so detection is less fragile once the hand appears.
+        self.wrist_x_history = []
+        self.WAVE_WINDOW = 8
+        self.WAVE_THRESHOLD = 0.18
+
+        self.gesture_buffer = []
+        self.BUFFER_LEN = 4
+        self.last_published = GESTURE_NONE
+        self.last_publish_time = 0.0
+        self.COOLDOWN_S = 2.0
+
         self.hands = mp.solutions.hands.Hands(
             static_image_mode=False,
             model_complexity=0,
@@ -90,43 +77,24 @@ class GestureNode(Node):
             min_tracking_confidence=0.2,
         )
 
-        # Process at ~5 fps - fast enough to feel responsive on a local machine.
-        self._last_process = 0.0
-        self.PROCESS_INTERVAL = 0.2
-        self._last_frame_time = 0.0
-        self._last_frame_topic = None
-        self.create_timer(5.0, self._log_image_status)
+        self.get_logger().info('Gesture node ready - waiting for gesture mode')
 
-        # Wave detection.
-        self.wrist_x_history = []
-        self.WAVE_WINDOW = 8
-        self.WAVE_THRESHOLD = 0.18
-
-        # Debounce: gesture must be consistent for N frames before publishing.
-        self.gesture_buffer = []
-        self.BUFFER_LEN = 4
-
-        # Cooldown so one gesture does not fire repeatedly.
+    def mode_callback(self, msg: Bool):
+        if msg.data == self.enabled:
+            return
+        self.enabled = msg.data
+        self.gesture_buffer.clear()
+        self.wrist_x_history.clear()
         self.last_published = GESTURE_NONE
         self.last_publish_time = 0.0
-        self.COOLDOWN_S = 2.0
+        state = 'ENABLED' if self.enabled else 'DISABLED'
+        self.get_logger().info(f'Gesture mode {state}')
 
-        self.get_logger().info(
-            'Gesture node ready - listening on '
-            + ', '.join(self.image_topics)
-        )
+    def image_callback(self, msg: Image):
+        if not self.enabled:
+            return
 
-    def _follow_callback(self, msg: Bool):
-        self._following = msg.data
-
-    def image_callback(self, msg: Image, topic: str):
         now = time.time()
-        self._last_frame_time = now
-        if topic != self._last_frame_topic:
-            self._last_frame_topic = topic
-            self.get_logger().info(f'Receiving images from {topic}')
-        self.get_logger().info('frame received', throttle_duration_sec=2.0)
-
         if now - self._last_process < self.PROCESS_INTERVAL:
             return
         self._last_process = now
@@ -138,73 +106,41 @@ class GestureNode(Node):
         rgb_frame.flags.writeable = True
 
         gesture = GESTURE_NONE
-        num_hands = (
-            len(result.multi_hand_landmarks)
-            if result.multi_hand_landmarks
-            else 0
-        )
-        if num_hands > 0:
+        if result.multi_hand_landmarks:
             lm = result.multi_hand_landmarks[0].landmark
             if self._is_wave(lm):
-                self.get_logger().info('HAND: wave')
                 gesture = GESTURE_WAVE
             else:
                 fingers_up = self._fingers_up(lm)
                 total = self._count_fingers(lm)
-                self.get_logger().info(
-                    f'HAND: {fingers_up} fingers up (total w/thumb={total})'
-                )
                 if fingers_up == 4:
                     gesture = GESTURE_FIVE
                 elif total in (1, 2, 3):
                     gesture = total
         else:
-            self.wrist_x_history.clear()
-            self.get_logger().info('NO HAND - hold open hand close to camera')
+            self.get_logger().info('No hand detected', throttle_duration_sec=2.0)
 
         self._update_buffer(gesture)
 
-    def _log_image_status(self):
-        if self._last_frame_time == 0.0:
-            self.get_logger().warn(
-                'No image frames received yet. Tried topics: '
-                + ', '.join(self.image_topics)
-            )
-            return
-
-        age = time.time() - self._last_frame_time
-        if age > 5.0:
-            self.get_logger().warn(
-                f'Image stream stalled for {age:.1f}s. Last topic: '
-                f'{self._last_frame_topic}'
-            )
-
     def _fingers_up(self, lm):
-        """Count the four main fingers that are extended."""
         return sum(
-            1
-            for tip, pip in zip(FINGER_TIPS, FINGER_PIPS)
+            1 for tip, pip in zip(FINGER_TIPS, FINGER_PIPS)
             if lm[tip].y < lm[pip].y
         )
 
     def _count_fingers(self, lm):
-        """Count extended fingers including the thumb."""
         count = self._fingers_up(lm)
-        # Thumb check assumes a mirrored image or left-hand presentation.
         if lm[4].x < lm[3].x:
             count += 1
         return count
 
     def _is_wave(self, lm):
-        """Detect horizontal wrist movement across recent frames."""
         self.wrist_x_history.append(lm[0].x)
         if len(self.wrist_x_history) > self.WAVE_WINDOW:
             self.wrist_x_history.pop(0)
         if len(self.wrist_x_history) < self.WAVE_WINDOW:
             return False
-        return (
-            max(self.wrist_x_history) - min(self.wrist_x_history)
-        ) > self.WAVE_THRESHOLD
+        return (max(self.wrist_x_history) - min(self.wrist_x_history)) > self.WAVE_THRESHOLD
 
     def _update_buffer(self, gesture):
         self.gesture_buffer.append(gesture)
@@ -219,10 +155,7 @@ class GestureNode(Node):
             return
 
         now = time.time()
-        if (
-            gesture == self.last_published
-            and (now - self.last_publish_time) < self.COOLDOWN_S
-        ):
+        if gesture == self.last_published and (now - self.last_publish_time) < self.COOLDOWN_S:
             return
 
         msg = Int32()
