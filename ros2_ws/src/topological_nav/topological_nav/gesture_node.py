@@ -51,12 +51,13 @@ class GestureNode(Node):
 
         self._following = False
 
-        # Running on local computer — use static mode for reliable per-frame detection
+        # static_image_mode=True: fresh detection every frame (no tracking between frames)
+        # Lower confidence so hand detection is more permissive
         self.hands = mp.solutions.hands.Hands(
             static_image_mode=True,
             max_num_hands=1,
-            min_detection_confidence=0.5,
-            min_tracking_confidence=0.5,
+            min_detection_confidence=0.3,
+            min_tracking_confidence=0.3,
         )
 
         # Process at ~5 fps — fast enough to feel responsive on a local machine
@@ -99,7 +100,8 @@ class GestureNode(Node):
         frame.flags.writeable = True
 
         gesture = GESTURE_NONE
-        if result.multi_hand_landmarks:
+        num_hands = len(result.multi_hand_landmarks) if result.multi_hand_landmarks else 0
+        if num_hands > 0:
             lm = result.multi_hand_landmarks[0].landmark
             if self._is_wave(lm):
                 self.get_logger().info('HAND: wave')
@@ -113,7 +115,7 @@ class GestureNode(Node):
                 elif total in (1, 2, 3):
                     gesture = total
         else:
-            self.get_logger().info('NO HAND')
+            self.get_logger().info('NO HAND — hold open hand close to camera')
 
         self._update_buffer(gesture)
 
