@@ -101,21 +101,18 @@ class GestureNode(Node):
         if result.multi_hand_landmarks:
             lm = result.multi_hand_landmarks[0].landmark
             if self._is_wave(lm):
+                self.get_logger().info('HAND: wave')
                 gesture = GESTURE_WAVE
             else:
                 fingers_up = self._fingers_up(lm)
                 total = self._count_fingers(lm)
-                self.get_logger().info(
-                    f'Hand detected: fingers_up={fingers_up} total={total}',
-                    throttle_duration_sec=0.5)
-                # Open hand: all 4 main fingers extended → GESTURE_FIVE
-                # (thumb detection is skipped — unreliable across hand orientations)
+                self.get_logger().info(f'HAND: {fingers_up} fingers up (total w/thumb={total})')
                 if fingers_up == 4:
                     gesture = GESTURE_FIVE
                 elif total in (1, 2, 3):
                     gesture = total
         else:
-            self.get_logger().info('No hand detected', throttle_duration_sec=2.0)
+            self.get_logger().info('NO HAND')
 
         self._update_buffer(gesture)
 
