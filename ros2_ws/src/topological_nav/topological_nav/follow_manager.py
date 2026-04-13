@@ -1,5 +1,6 @@
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import QoSDurabilityPolicy, QoSHistoryPolicy, QoSProfile, QoSReliabilityPolicy
 from std_msgs.msg import Bool, Int32
 
 # State machine controlled by gestures.
@@ -14,6 +15,12 @@ from std_msgs.msg import Bool, Int32
 # /person_follow_active (Bool) → published here (default QoS)
 
 GESTURE_FIVE = 5
+FOLLOW_STATE_QOS = QoSProfile(
+    history=QoSHistoryPolicy.KEEP_LAST,
+    depth=1,
+    reliability=QoSReliabilityPolicy.RELIABLE,
+    durability=QoSDurabilityPolicy.TRANSIENT_LOCAL,
+)
 
 
 class FollowManager(Node):
@@ -21,7 +28,8 @@ class FollowManager(Node):
     def __init__(self):
         super().__init__('follow_manager')
 
-        self.follow_pub = self.create_publisher(Bool, '/person_follow_active', 10)
+        self.follow_pub = self.create_publisher(
+            Bool, '/person_follow_active', FOLLOW_STATE_QOS)
         self.create_subscription(Int32, '/gesture', self.gesture_callback, 10)
 
         self.following = False

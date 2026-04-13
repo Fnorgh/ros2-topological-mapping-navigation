@@ -15,7 +15,13 @@ if _colcon_prefix:
 
 import rclpy
 from rclpy.node import Node
-from rclpy.qos import qos_profile_sensor_data
+from rclpy.qos import (
+    QoSDurabilityPolicy,
+    QoSHistoryPolicy,
+    QoSProfile,
+    QoSReliabilityPolicy,
+    qos_profile_sensor_data,
+)
 from geometry_msgs.msg import TwistStamped
 from sensor_msgs.msg import Image
 from std_msgs.msg import Bool, String
@@ -30,6 +36,12 @@ MIN_CONF         = 0.25   # minimum YOLO detection confidence
 
 # Slow rotation used to search when no person is visible
 SEARCH_TURN_SPEED = 0.0   # rad/s
+FOLLOW_STATE_QOS = QoSProfile(
+    history=QoSHistoryPolicy.KEEP_LAST,
+    depth=1,
+    reliability=QoSReliabilityPolicy.RELIABLE,
+    durability=QoSDurabilityPolicy.TRANSIENT_LOCAL,
+)
 
 
 class PersonFollowNode(Node):
@@ -59,7 +71,7 @@ class PersonFollowNode(Node):
         # transient_local QoS matches the publisher so the initial False is received
         # even if this node starts after follow_manager.
         self.create_subscription(
-            Bool, '/person_follow_active', self.active_callback, 10)
+            Bool, '/person_follow_active', self.active_callback, FOLLOW_STATE_QOS)
 
         self.person_visible    = False
         self.last_announce_time = 0.0

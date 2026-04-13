@@ -28,7 +28,7 @@ echo "==> Opening terminals..."
 # Show 5 fingers to start following; show 5 again to stop and return to idle.
 gnome-terminal --title="Person Follow" -- bash -c "
 $ROS_ENV
-ros2 launch topological_nav person_follow.launch.xml
+ros2 launch topological_nav person_follow.launch.xml robot_name:=$ROBOT
 exec bash"
 
 # Terminal 2: Speak listener (audio plays on this computer)

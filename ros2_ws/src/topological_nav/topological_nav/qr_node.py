@@ -1,6 +1,12 @@
 import rclpy
 from rclpy.node import Node
-from rclpy.qos import qos_profile_sensor_data
+from rclpy.qos import (
+    QoSDurabilityPolicy,
+    QoSHistoryPolicy,
+    QoSProfile,
+    QoSReliabilityPolicy,
+    qos_profile_sensor_data,
+)
 from std_msgs.msg import String, Bool
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
@@ -12,6 +18,12 @@ import time
 # Same code will not re-fire within COOLDOWN_SEC seconds.
 
 COOLDOWN_SEC = 2.0
+FOLLOW_STATE_QOS = QoSProfile(
+    history=QoSHistoryPolicy.KEEP_LAST,
+    depth=1,
+    reliability=QoSReliabilityPolicy.RELIABLE,
+    durability=QoSDurabilityPolicy.TRANSIENT_LOCAL,
+)
 
 
 class QRNode(Node):
@@ -27,7 +39,7 @@ class QRNode(Node):
             self.image_callback,
             qos_profile_sensor_data)
         self.create_subscription(
-            Bool, '/person_follow_active', self.active_callback, 10)
+            Bool, '/person_follow_active', self.active_callback, FOLLOW_STATE_QOS)
 
         self.bridge      = CvBridge()
         self.detector    = cv2.QRCodeDetector()
