@@ -22,6 +22,17 @@ echo "==> Building package..."
 cd $WS && colcon build --packages-select topological_nav
 source $WS/install/setup.bash
 
+echo "==> Using robot: $ROBOT"
+echo "==> ROS_DOMAIN_ID=$ROS_DOMAIN_ID"
+echo "==> ROS_DISCOVERY_SERVER=$ROS_DISCOVERY_SERVER"
+echo "==> Restarting ROS daemon with this environment..."
+unset ROS_LOCALHOST_ONLY
+export ROS_DOMAIN_ID=$ROS_DOMAIN_ID
+export ROS_DISCOVERY_SERVER="$ROS_DISCOVERY_SERVER"
+export ROS_SUPER_CLIENT=True
+ros2 daemon stop || true
+ros2 daemon start
+
 echo "==> Opening terminals..."
 
 # Terminal 1: All nodes (person follow, gesture, QR, follow manager, TTS)
