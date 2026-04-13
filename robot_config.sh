@@ -29,6 +29,14 @@ rm -f "$_tmp"
 
 ROBOT_NAME="$ROBOT"
 
+if [ -n "$ROS_DOMAIN_ID_OVERRIDE" ]; then
+  ROS_DOMAIN_ID="$ROS_DOMAIN_ID_OVERRIDE"
+fi
+
+if [ -n "$ROS_DISCOVERY_SERVER_OVERRIDE" ]; then
+  ROS_DISCOVERY_SERVER="$ROS_DISCOVERY_SERVER_OVERRIDE"
+fi
+
 if [ -z "$ROS_DOMAIN_ID" ]; then
   echo "ERROR: Could not determine ROS_DOMAIN_ID for robot '$ROBOT'"
   exit 1
