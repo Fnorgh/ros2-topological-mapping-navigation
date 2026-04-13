@@ -14,6 +14,7 @@ setup(
             'launch/topological_nav.launch.xml',
             'launch/mapping.launch.xml',
             'launch/person_follow.launch.xml',
+            'launch/person_follow_yolo_only.launch.xml',
         ]),
     ],
     install_requires=['setuptools'],
