@@ -50,8 +50,8 @@ class GestureNode(Node):
         self.hands = mp.solutions.hands.Hands(
             static_image_mode=False,
             max_num_hands=1,
-            min_detection_confidence=0.7,
-            min_tracking_confidence=0.5,
+            min_detection_confidence=0.4,
+            min_tracking_confidence=0.3,
         )
 
         # Wave detection: track wrist x over a short history
