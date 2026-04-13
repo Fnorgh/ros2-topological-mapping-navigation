@@ -3,12 +3,17 @@
 #  Set the robot name — everything else is auto-filled from robot_config.sh
 # ─────────────────────────────────────────────
 ROBOT="leatherback"
+source "$(dirname "$0")/robot_config.sh" || exit 1
 # ─────────────────────────────────────────────
 
 WS=~/robotics/ros2-topological-mapping-navigation/ros2_ws
 REPO=~/robotics/ros2-topological-mapping-navigation
 
-ROS_ENV="source /opt/ros/jazzy/setup.bash && source $WS/install/setup.bash"
+ROS_ENV="unset ROS_LOCALHOST_ONLY && \
+export ROS_DOMAIN_ID=$ROS_DOMAIN_ID && \
+export ROS_DISCOVERY_SERVER=\"$ROS_DISCOVERY_SERVER\" && \
+export ROS_SUPER_CLIENT=True && \
+source $WS/install/setup.bash"
 
 echo "==> Pulling latest changes..."
 cd $REPO && git pull
