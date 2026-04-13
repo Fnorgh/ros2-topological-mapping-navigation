@@ -1,15 +1,29 @@
 <launch>
   <arg name="robot_name" default="" description="TurtleBot name printed on the robot"/>
 
+  <!-- Person follow — YOLOv8n detects people, robot drives toward them -->
+  <!-- Controlled by follow_manager via /person_follow_active -->
   <executable
-    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; source ~/robotics/ros2-topological-mapping-navigation/ros2_ws/install/setup.bash &amp;&amp; ~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.person_follow_node"'
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.person_follow_node"'
     output="screen"/>
 
+  <!-- Gesture node — detects finger count and wave, publishes /gesture -->
   <executable
-    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; source ~/robotics/ros2-topological-mapping-navigation/ros2_ws/install/setup.bash &amp;&amp; ~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.gesture_node"'
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.gesture_node"'
     output="screen"/>
 
+  <!-- QR node — scans QR codes when /person_follow_active is True -->
   <executable
-    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; source ~/robotics/ros2-topological-mapping-navigation/ros2_ws/install/setup.bash &amp;&amp; ~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.follow_manager"'
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.qr_node"'
+    output="screen"/>
+
+  <!-- Follow manager — gesture 5 toggles following on/off -->
+  <executable
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.follow_manager"'
+    output="screen"/>
+
+  <!-- Text-to-speech (robot side — no audio hardware, use speak_listener on your computer instead) -->
+  <executable
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ros2 run topological_nav tts_node"'
     output="screen"/>
 </launch>

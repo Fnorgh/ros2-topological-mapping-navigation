@@ -1,6 +1,5 @@
-import os
 import sys
-import time
+import os
 
 # Add venv site-packages if a venv exists in the workspace root.
 _colcon_prefix = os.environ.get('COLCON_PREFIX_PATH', '')
@@ -15,79 +14,68 @@ if _colcon_prefix:
         sys.path.insert(0, _venv_sp)
 
 import rclpy
-from cv_bridge import CvBridge
-from geometry_msgs.msg import TwistStamped
 from rclpy.node import Node
-from rclpy.qos import QoSDurabilityPolicy, QoSHistoryPolicy, QoSProfile, QoSReliabilityPolicy, qos_profile_sensor_data
+from geometry_msgs.msg import TwistStamped
 from sensor_msgs.msg import Image
 from std_msgs.msg import Bool, String
+from cv_bridge import CvBridge
 from ultralytics import YOLO
 
-KP_ANGULAR = 1.5
-LINEAR_SPEED = 0.15
-STOP_HEIGHT_RATIO = 0.80
-MIN_CONF = 0.25
-SEARCH_TURN_SPEED = 0.0
-NO_PERSON_TIMEOUT_S = 5.0
+# ── Proportional control ──────────────────────────────────────────────────────
+KP_ANGULAR       = 1.5    # rad/s per normalised pixel offset
+LINEAR_SPEED     = 0.15   # m/s forward when person is not yet close
+STOP_HEIGHT_RATIO = 0.80  # stop driving when person bbox height > 80 % of frame
+MIN_CONF         = 0.25   # minimum YOLO detection confidence
 
-STATE_QOS = QoSProfile(
-    history=QoSHistoryPolicy.KEEP_LAST,
-    depth=1,
-    reliability=QoSReliabilityPolicy.RELIABLE,
-    durability=QoSDurabilityPolicy.TRANSIENT_LOCAL,
-)
+# Slow rotation used to search when no person is visible
+SEARCH_TURN_SPEED = 0.0   # rad/s
 
 
 class PersonFollowNode(Node):
+
     def __init__(self):
         super().__init__('person_follow_node')
 
         self.bridge = CvBridge()
         self.active = False
         self._frame_count = 0
-        self.PROCESS_EVERY = 3
+        self.PROCESS_EVERY = 3  # only run YOLO on every Nth frame
 
+        # YOLOv8n – downloads weights (~6 MB) on first run
         self.model = YOLO('yolov8n.pt')
         self.get_logger().info('YOLOv8n loaded')
 
-        self.cmd_pub = self.create_publisher(TwistStamped, '/cmd_vel', 10)
+        self.cmd_pub   = self.create_publisher(TwistStamped, '/cmd_vel', 10)
         self.speak_pub = self.create_publisher(String, '/speak', 10)
-        self.timeout_pub = self.create_publisher(Bool, '/person_follow_timeout', 10)
 
         self.create_subscription(
-            Image, '/oakd/rgb/preview/image_raw', self.image_callback, qos_profile_sensor_data
-        )
-        self.create_subscription(
-            Bool, '/person_follow_active', self.active_callback, STATE_QOS
-        )
+            Image, '/oakd/rgb/preview/image_raw', self.image_callback, 10)
 
-        self.person_visible = False
+        # Controlled by follow_manager via gesture 5.
+        # transient_local QoS matches the publisher so the initial False is received
+        # even if this node starts after follow_manager.
+        self.create_subscription(
+            Bool, '/person_follow_active', self.active_callback, 10)
+
+        self.person_visible    = False
         self.last_announce_time = 0.0
-        self.ANNOUNCE_INTERVAL = 1
-        self.last_person_time = time.time()
-        self.timeout_sent = False
-        self.target_linear_x = 0.0
-        self.target_angular_z = 0.0
-        self.create_timer(0.1, self.publish_current_cmd)
+        self.ANNOUNCE_INTERVAL  = 1  # seconds between repeated announcements
 
-        self.get_logger().info('Person follow node ready - waiting on /person_follow_active')
+        self.get_logger().info(
+            'Person follow node ready – waiting on /person_follow_active')
+
+    # ── Enable / disable ─────────────────────────────────────────────────────
 
     def active_callback(self, msg: Bool):
         if msg.data == self.active:
             return
         self.active = msg.data
         self.get_logger().info(
-            f'Person following {"ENABLED" if self.active else "DISABLED"}'
-        )
-        self.last_person_time = time.time()
-        self.timeout_sent = False
+            f'Person following {"ENABLED" if self.active else "DISABLED"}')
         if not self.active:
             self._publish_stop()
 
-    def publish_current_cmd(self):
-        if not self.active:
-            return
-        self._publish_cmd(self.target_linear_x, self.target_angular_z)
+    # ── Image callback ────────────────────────────────────────────────────────
 
     def image_callback(self, msg: Image):
         if not self.active:
@@ -99,10 +87,15 @@ class PersonFollowNode(Node):
 
         frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
         h, w = frame.shape[:2]
-        small = frame[::2, ::2]
 
+        # Resize to speed up inference
+        small = frame[::2, ::2]  # half resolution
+
+        # Detect people only (COCO class 0)
         results = self.model(small, classes=[0], conf=MIN_CONF, verbose=False)
         box = self._largest_person(results)
+
+        # Scale box coords back to original frame size
         if box is not None:
             x1, y1, x2, y2 = box
             box = (x1 * 2, y1 * 2, x2 * 2, y2 * 2)
@@ -110,24 +103,16 @@ class PersonFollowNode(Node):
         if box is None:
             self.get_logger().info('No person detected')
             self.person_visible = False
-            self.target_linear_x = 0.0
-            self.target_angular_z = SEARCH_TURN_SPEED
-
-            now = time.time()
-            if (now - self.last_person_time) >= NO_PERSON_TIMEOUT_S and not self.timeout_sent:
-                timeout_msg = Bool()
-                timeout_msg.data = True
-                self.timeout_pub.publish(timeout_msg)
-                self.timeout_sent = True
-                self.get_logger().info('No person for 5 seconds - requesting gesture mode')
+            cmd = TwistStamped()
+            cmd.twist.angular.z = SEARCH_TURN_SPEED
+            self.cmd_pub.publish(cmd)
             return
 
-        self.last_person_time = time.time()
-        self.timeout_sent = False
-
+        # Announce on first detection and every ANNOUNCE_INTERVAL seconds after
+        import time
         now = time.time()
         if not self.person_visible or (now - self.last_announce_time) >= self.ANNOUNCE_INTERVAL:
-            self.person_visible = True
+            self.person_visible     = True
             self.last_announce_time = now
             msg = String()
             msg.data = 'feet detected'
@@ -137,43 +122,40 @@ class PersonFollowNode(Node):
         cx = (x1 + x2) / 2.0
         box_h = y2 - y1
 
+        # Normalised horizontal offset: −0.5 (full left) … +0.5 (full right)
         offset = (cx / w) - 0.5
+
+        # Turn to centre the person; drive forward unless they fill the frame
         angular_z = -KP_ANGULAR * offset
         height_ratio = box_h / h
         linear_x = 0.0 if height_ratio >= STOP_HEIGHT_RATIO else LINEAR_SPEED
 
-        self.target_linear_x = linear_x
-        self.target_angular_z = angular_z
-
-        self.get_logger().info(
-            f'offset={offset:+.2f}  h_ratio={height_ratio:.2f}  '
-            f'lin={linear_x:.2f}  ang={angular_z:+.2f}'
-        )
-
-    def _largest_person(self, results):
-        best_area = 0
-        best_box = None
-        for result in results:
-            for box in result.boxes:
-                x1, y1, x2, y2 = box.xyxy[0].tolist()
-                area = (x2 - x1) * (y2 - y1)
-                if area > best_area:
-                    best_area = area
-                    best_box = (x1, y1, x2, y2)
-        return best_box
-
-    def _publish_cmd(self, linear_x: float, angular_z: float):
         cmd = TwistStamped()
-        cmd.header.stamp = self.get_clock().now().to_msg()
-        cmd.header.frame_id = 'base_link'
         cmd.twist.linear.x = linear_x
         cmd.twist.angular.z = angular_z
         self.cmd_pub.publish(cmd)
 
+        self.get_logger().info(
+            f'offset={offset:+.2f}  h_ratio={height_ratio:.2f}  '
+            f'lin={linear_x:.2f}  ang={angular_z:+.2f}')
+
+    # ── Helpers ───────────────────────────────────────────────────────────────
+
+    def _largest_person(self, results):
+        """Return xyxy bbox of the largest detected person, or None."""
+        best_area = 0
+        best_box  = None
+        for r in results:
+            for box in r.boxes:
+                x1, y1, x2, y2 = box.xyxy[0].tolist()
+                area = (x2 - x1) * (y2 - y1)
+                if area > best_area:
+                    best_area = area
+                    best_box  = (x1, y1, x2, y2)
+        return best_box
+
     def _publish_stop(self):
-        self.target_linear_x = 0.0
-        self.target_angular_z = 0.0
-        self._publish_cmd(0.0, 0.0)
+        self.cmd_pub.publish(TwistStamped())
 
 
 def main(args=None):
