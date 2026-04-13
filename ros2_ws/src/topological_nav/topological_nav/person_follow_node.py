@@ -27,7 +27,7 @@ KP_ANGULAR = 1.5
 LINEAR_SPEED = 0.15
 STOP_HEIGHT_RATIO = 0.80
 MIN_CONF = 0.25
-SEARCH_TURN_SPEED = 0.25
+SEARCH_TURN_SPEED = 0.0
 NO_PERSON_TIMEOUT_S = 5.0
 
 STATE_QOS = QoSProfile(
@@ -45,7 +45,7 @@ class PersonFollowNode(Node):
         self.bridge = CvBridge()
         self.active = False
         self._frame_count = 0
-        self.PROCESS_EVERY = 6
+        self.PROCESS_EVERY = 3
 
         self.model = YOLO('yolov8n.pt')
         self.get_logger().info('YOLOv8n loaded')
@@ -136,8 +136,8 @@ class PersonFollowNode(Node):
         x1, y1, x2, y2 = box
         cx = (x1 + x2) / 2.0
         box_h = y2 - y1
-        offset = (cx / w) - 0.5
 
+        offset = (cx / w) - 0.5
         angular_z = -KP_ANGULAR * offset
         height_ratio = box_h / h
         linear_x = 0.0 if height_ratio >= STOP_HEIGHT_RATIO else LINEAR_SPEED
