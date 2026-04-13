@@ -38,4 +38,17 @@ $ROS_ENV
 python3 $REPO/ros2_ws/src/topological_nav/topological_nav/speak_listener.py
 exec bash"
 
+sleep 5
+
+# Terminal 3: Debug — live gesture and state output
+gnome-terminal --title="DEBUG: Gesture + State" -- bash -c "
+$ROS_ENV
+ros2 daemon stop && ros2 daemon start
+echo '=== Gesture codes: 1=index 2=peace 3=three 5=open-hand ==='
+echo '=== /person_follow_active: false=IDLE  true=FOLLOWING ==='
+echo ''
+ros2 topic echo /gesture &
+ros2 topic echo /person_follow_active
+exec bash"
+
 echo "==> Person follow launched — show 5 fingers to start/stop following."

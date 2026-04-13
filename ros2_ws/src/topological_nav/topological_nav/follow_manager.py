@@ -28,8 +28,15 @@ class FollowManager(Node):
         self._startup_count = 0
         self._startup_timer = self.create_timer(1.0, self._startup_publish)
 
+        # Print current state every 3 s so it's always visible in the terminal
+        self.create_timer(3.0, self._status_log)
+
         self.get_logger().info(
             'Follow manager ready — IDLE. Show 5 fingers to start/stop following.')
+
+    def _status_log(self):
+        state = 'FOLLOWING (gesture 5 to stop)' if self.following else 'IDLE — show 5 fingers to start'
+        self.get_logger().info(f'State: {state}')
 
     def _startup_publish(self):
         self._publish(self.following)
