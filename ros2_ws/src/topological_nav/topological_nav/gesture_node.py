@@ -48,9 +48,9 @@ class GestureNode(Node):
             Image, '/oakd/rgb/preview/image_raw', self.image_callback, 10)
 
         self.hands = mp.solutions.hands.Hands(
-            static_image_mode=False,
+            static_image_mode=True,
             max_num_hands=1,
-            min_detection_confidence=0.4,
+            min_detection_confidence=0.3,
             min_tracking_confidence=0.3,
         )
 
