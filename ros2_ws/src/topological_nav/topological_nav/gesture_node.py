@@ -95,6 +95,8 @@ class GestureNode(Node):
                     gesture = GESTURE_FIVE
                 elif total in (1, 2, 3):
                     gesture = total
+        else:
+            self.get_logger().info('No hand detected', throttle_duration_sec=2.0)
 
         self._update_buffer(gesture)
 
