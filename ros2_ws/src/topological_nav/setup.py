@@ -14,6 +14,7 @@ setup(
             'launch/topological_nav.launch.xml',
             'launch/mapping.launch.xml',
             'launch/person_follow.launch.xml',
+            'launch/person_follow.launch.py',
         ]),
     ],
     install_requires=['setuptools'],
