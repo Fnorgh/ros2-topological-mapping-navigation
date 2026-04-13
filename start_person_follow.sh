@@ -44,10 +44,8 @@ gnome-terminal --title="DEBUG: Gesture + State" -- bash -c "
 $ROS_ENV
 echo '=== Gesture codes: 1=index 2=peace 3=three 5=open-hand ==='
 echo '=== /person_follow_active: false=IDLE  true=FOLLOWING ==='
-echo '=== Waiting for nodes to start... ==='
-until ros2 topic list 2>/dev/null | grep -q '/gesture'; do sleep 1; done
-echo '=== Topics found — streaming now ==='
-echo ''
+sleep 20
+echo '=== Streaming now ==='
 ros2 topic echo /gesture &
 ros2 topic echo /person_follow_active
 exec bash"
