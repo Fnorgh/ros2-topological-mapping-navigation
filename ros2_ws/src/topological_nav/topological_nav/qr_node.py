@@ -1,5 +1,6 @@
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import qos_profile_sensor_data
 from std_msgs.msg import String, Bool
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
@@ -21,7 +22,10 @@ class QRNode(Node):
         self.pub = self.create_publisher(String, '/qr_detected', 10)
 
         self.create_subscription(
-            Image, '/oakd/rgb/preview/image_raw', self.image_callback, 10)
+            Image,
+            '/oakd/rgb/preview/image_raw',
+            self.image_callback,
+            qos_profile_sensor_data)
         self.create_subscription(
             Bool, '/person_follow_active', self.active_callback, 10)
 

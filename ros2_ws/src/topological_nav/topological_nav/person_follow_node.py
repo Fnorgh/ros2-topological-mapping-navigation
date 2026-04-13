@@ -15,6 +15,7 @@ if _colcon_prefix:
 
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import qos_profile_sensor_data
 from geometry_msgs.msg import TwistStamped
 from sensor_msgs.msg import Image
 from std_msgs.msg import Bool, String
@@ -49,7 +50,10 @@ class PersonFollowNode(Node):
         self.speak_pub = self.create_publisher(String, '/speak', 10)
 
         self.create_subscription(
-            Image, '/oakd/rgb/preview/image_raw', self.image_callback, 10)
+            Image,
+            '/oakd/rgb/preview/image_raw',
+            self.image_callback,
+            qos_profile_sensor_data)
 
         # Controlled by follow_manager via gesture 5.
         # transient_local QoS matches the publisher so the initial False is received
