@@ -47,21 +47,26 @@ class GestureNode(Node):
         self.create_subscription(
             Image, '/oakd/rgb/preview/image_raw', self.image_callback, 10)
 
+        # static_image_mode=False uses cheap tracking between detections
         self.hands = mp.solutions.hands.Hands(
-            static_image_mode=True,
+            static_image_mode=False,
             max_num_hands=1,
             min_detection_confidence=0.3,
             min_tracking_confidence=0.3,
         )
 
+        # Only process 1 frame per second to save CPU on RPi
+        self.PROCESS_EVERY_S  = 1.0
+        self._last_process    = 0.0
+
         # Wave detection: track wrist x over a short history
         self.wrist_x_history = []
-        self.WAVE_WINDOW      = 12    # frames
+        self.WAVE_WINDOW      = 5     # reduced (fewer frames at 1 fps)
         self.WAVE_THRESHOLD   = 0.18  # normalized image width
 
-        # Debounce: gesture must be consistent for N frames before publishing
+        # Debounce: gesture must be consistent for N checks before publishing
         self.gesture_buffer = []
-        self.BUFFER_LEN     = 8
+        self.BUFFER_LEN     = 3      # reduced to match lower frame rate
 
         # Cooldown so one gesture doesn't fire repeatedly
         self.last_published      = GESTURE_NONE
@@ -75,10 +80,12 @@ class GestureNode(Node):
     # ------------------------------------------------------------------
 
     def image_callback(self, msg):
+        now = time.time()
+        if now - self._last_process < self.PROCESS_EVERY_S:
+            return
+        self._last_process = now
+
         frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='rgb8')
-        self.get_logger().info(
-            f'Frame size: {frame.shape[1]}x{frame.shape[0]}',
-            throttle_duration_sec=5.0)
         result = self.hands.process(frame)
 
         gesture = GESTURE_NONE
