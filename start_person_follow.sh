@@ -6,6 +6,7 @@ ENABLE_GESTURE=true
 ENABLE_QR=true
 ENABLE_FOLLOW_MANAGER=true
 LAUNCH_FILE="person_follow.launch.xml"
+DIRECT_CMD=""
 
 for arg in "$@"; do
   case "$arg" in
@@ -27,7 +28,7 @@ for arg in "$@"; do
       ENABLE_GESTURE=false
       ENABLE_QR=false
       ENABLE_FOLLOW_MANAGER=false
-      LAUNCH_FILE="person_follow_yolo_only.launch.xml"
+      DIRECT_CMD="~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.person_follow_node --ros-args -p start_active:=true"
       ;;
   esac
 done
@@ -96,9 +97,16 @@ echo "==> Camera stream is visible from this computer."
 echo "==> Opening terminals..."
 
 # Terminal 1: All nodes for offboard person-follow compute, without audio.
-gnome-terminal --title="Person Follow" -- bash -c "
+if [ -n "$DIRECT_CMD" ]; then
+  gnome-terminal --title="Person Follow" -- bash -c "
+$ROS_ENV
+$DIRECT_CMD
+exec bash"
+else
+  gnome-terminal --title="Person Follow" -- bash -c "
 $ROS_ENV
 ros2 launch topological_nav $LAUNCH_FILE robot_name:=$ROBOT auto_follow:=$AUTO_FOLLOW
 exec bash"
+fi
 
 echo "==> Person follow launched silently - show 5 fingers to start/stop following."
