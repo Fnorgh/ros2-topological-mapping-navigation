@@ -2,7 +2,7 @@
 # ─────────────────────────────────────────────
 #  Set the robot name — everything else is auto-filled from robot_config.sh
 # ─────────────────────────────────────────────
-ROBOT="galapagos"
+ROBOT="testudo"
 source "$(dirname "$0")/robot_config.sh" || exit 1
 # ─────────────────────────────────────────────
 
