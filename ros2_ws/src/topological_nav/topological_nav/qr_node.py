@@ -1,17 +1,10 @@
 import rclpy
 from rclpy.node import Node
-from rclpy.qos import QoSProfile, DurabilityPolicy, ReliabilityPolicy
 from std_msgs.msg import String, Bool
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import cv2
 import time
-
-_LATCHED_QOS = QoSProfile(
-    depth=1,
-    durability=DurabilityPolicy.TRANSIENT_LOCAL,
-    reliability=ReliabilityPolicy.RELIABLE,
-)
 
 # Published to /qr_detected (String) when a QR code is read.
 # Scanning is active only while /person_follow_active (Bool True) is received.
@@ -30,7 +23,7 @@ class QRNode(Node):
         self.create_subscription(
             Image, '/oakd/rgb/preview/image_raw', self.image_callback, 10)
         self.create_subscription(
-            Bool, '/person_follow_active', self.active_callback, _LATCHED_QOS)
+            Bool, '/person_follow_active', self.active_callback, 10)
 
         self.bridge      = CvBridge()
         self.detector    = cv2.QRCodeDetector()

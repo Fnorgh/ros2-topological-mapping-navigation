@@ -1,6 +1,5 @@
 import rclpy
 from rclpy.node import Node
-from rclpy.qos import QoSProfile, DurabilityPolicy, ReliabilityPolicy
 from std_msgs.msg import Bool, Int32
 
 # State machine controlled by gesture 5 (open hand).
@@ -9,18 +8,9 @@ from std_msgs.msg import Bool, Int32
 # FOLLOWING → person_follow active, QR scanning ON, gesture 5 stops it
 #
 # /gesture (Int32)             → consumed here
-# /person_follow_active (Bool) → published here with transient_local (latched)
-#                                so late-starting nodes always get current state
+# /person_follow_active (Bool) → published here (default QoS)
 
 GESTURE_FIVE = 5
-
-# Transient-local = ROS2 equivalent of a latched topic.
-# Any node that subscribes after the last publish still receives the current value.
-_LATCHED_QOS = QoSProfile(
-    depth=1,
-    durability=DurabilityPolicy.TRANSIENT_LOCAL,
-    reliability=ReliabilityPolicy.RELIABLE,
-)
 
 
 class FollowManager(Node):
@@ -28,16 +18,25 @@ class FollowManager(Node):
     def __init__(self):
         super().__init__('follow_manager')
 
-        self.follow_pub = self.create_publisher(Bool, '/person_follow_active', _LATCHED_QOS)
+        self.follow_pub = self.create_publisher(Bool, '/person_follow_active', 10)
         self.create_subscription(Int32, '/gesture', self.gesture_callback, 10)
 
         self.following = False
 
-        # Publish IDLE immediately — transient_local ensures any node that
-        # starts later (e.g. person_follow_node) still receives this value.
-        self._publish(False)
+        # Re-publish the current state every second for the first 10 s so any
+        # node that starts late still receives the initial IDLE (False) value.
+        self._startup_count = 0
+        self._startup_timer = self.create_timer(1.0, self._startup_publish)
+
         self.get_logger().info(
             'Follow manager ready — IDLE. Show 5 fingers to start/stop following.')
+
+    def _startup_publish(self):
+        self._publish(self.following)
+        self._startup_count += 1
+        if self._startup_count >= 10:
+            self.destroy_timer(self._startup_timer)
+            self.get_logger().info('Startup broadcast done — waiting for gesture 5')
 
     def gesture_callback(self, msg: Int32):
         if msg.data != GESTURE_FIVE:
