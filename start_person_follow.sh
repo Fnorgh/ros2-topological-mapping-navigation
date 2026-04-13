@@ -41,7 +41,8 @@ sleep 5
 
 # Terminal 3: Debug — live gesture and state output
 gnome-terminal --title="DEBUG: Gesture + State" -- bash -c "
-$ROS_ENV
+printf '%s' '$ROBOT_NAME' | robot-setup.sh && unset ROS_LOCALHOST_ONLY
+source $WS/install/setup.bash
 echo '=== Gesture codes: 1=index 2=peace 3=three 5=open-hand ==='
 echo '=== /person_follow_active: false=IDLE  true=FOLLOWING ==='
 sleep 20
