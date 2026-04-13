@@ -57,7 +57,7 @@ class PersonFollowNode(Node):
         super().__init__('person_follow_node')
 
         self.bridge = CvBridge()
-        self.active = False
+        self.active = bool(self.declare_parameter('start_active', False).value)
         self._frame_count = 0
         self.PROCESS_EVERY = 6  # only run YOLO on every Nth frame (~2.5 fps)
 
@@ -90,6 +90,8 @@ class PersonFollowNode(Node):
         self.get_logger().info(
             'Person follow node ready - waiting on /person_follow_active'
         )
+        if self.active:
+            self.get_logger().info('Person following ENABLED at startup')
 
     def active_callback(self, msg: Bool):
         if msg.data == self.active:

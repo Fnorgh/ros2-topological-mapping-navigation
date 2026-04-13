@@ -1,6 +1,35 @@
 #!/usr/bin/env bash
 
-ROBOT="${1:-leatherback}"
+ROBOT="leatherback"
+AUTO_FOLLOW=false
+ENABLE_GESTURE=true
+ENABLE_QR=true
+ENABLE_FOLLOW_MANAGER=true
+
+for arg in "$@"; do
+  case "$arg" in
+    leatherback|galapagos|snapper|loggerhead|testudo|terrapin|hawksbill|matamata|softshell)
+      ROBOT="$arg"
+      ;;
+    --auto-follow)
+      AUTO_FOLLOW=true
+      ;;
+    --no-gesture)
+      ENABLE_GESTURE=false
+      ENABLE_FOLLOW_MANAGER=false
+      ;;
+    --no-qr)
+      ENABLE_QR=false
+      ;;
+    --yolo-only)
+      AUTO_FOLLOW=true
+      ENABLE_GESTURE=false
+      ENABLE_QR=false
+      ENABLE_FOLLOW_MANAGER=false
+      ;;
+  esac
+done
+
 source "$(dirname "$0")/robot_config.sh" || exit 1
 
 WS=~/robotics/ros2-topological-mapping-navigation/ros2_ws
@@ -22,6 +51,7 @@ source "$WS/install/setup.bash"
 echo "==> Using robot: $ROBOT"
 echo "==> ROS_DOMAIN_ID=$ROS_DOMAIN_ID"
 echo "==> ROS_DISCOVERY_SERVER=$ROS_DISCOVERY_SERVER"
+echo "==> AUTO_FOLLOW=$AUTO_FOLLOW  ENABLE_GESTURE=$ENABLE_GESTURE  ENABLE_QR=$ENABLE_QR"
 echo "==> Restarting ROS daemon with this environment..."
 unset ROS_LOCALHOST_ONLY
 export ROS_DOMAIN_ID="$ROS_DOMAIN_ID"
@@ -66,7 +96,7 @@ echo "==> Opening terminals..."
 # Terminal 1: All nodes for offboard person-follow compute, without audio.
 gnome-terminal --title="Person Follow" -- bash -c "
 $ROS_ENV
-ros2 launch topological_nav person_follow.launch.xml robot_name:=$ROBOT
+ros2 launch topological_nav person_follow.launch.xml robot_name:=$ROBOT auto_follow:=$AUTO_FOLLOW enable_gesture:=$ENABLE_GESTURE enable_qr:=$ENABLE_QR enable_follow_manager:=$ENABLE_FOLLOW_MANAGER
 exec bash"
 
 echo "==> Person follow launched silently - show 5 fingers to start/stop following."
