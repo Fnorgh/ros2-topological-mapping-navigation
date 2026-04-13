@@ -1,23 +1,24 @@
 <launch>
-  <arg name="robot_name" default="leatherback" description="TurtleBot name — used to look up domain/discovery via robot-setup.sh"/>
+  <!-- ROBOT env var must be exported before launching (done by start_person_follow.sh) -->
+  <!-- ros_launch_node.sh evals robot-setup.sh to get domain/discovery for that robot -->
 
   <executable
-    cmd='bash -lc "$HOME/robotics/ros2-topological-mapping-navigation/ros2_ws/src/topological_nav/scripts/ros_launch_node.sh $(var robot_name) $HOME/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.person_follow_node"'
+    cmd="bash" args="-lc &quot;$HOME/robotics/ros2-topological-mapping-navigation/ros2_ws/src/topological_nav/scripts/ros_launch_node.sh $ROBOT $HOME/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.person_follow_node&quot;"
     output="screen"/>
 
   <executable
-    cmd='bash -lc "$HOME/robotics/ros2-topological-mapping-navigation/ros2_ws/src/topological_nav/scripts/ros_launch_node.sh $(var robot_name) $HOME/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.gesture_node"'
+    cmd="bash" args="-lc &quot;$HOME/robotics/ros2-topological-mapping-navigation/ros2_ws/src/topological_nav/scripts/ros_launch_node.sh $ROBOT $HOME/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.gesture_node&quot;"
     output="screen"/>
 
   <executable
-    cmd='bash -lc "$HOME/robotics/ros2-topological-mapping-navigation/ros2_ws/src/topological_nav/scripts/ros_launch_node.sh $(var robot_name) $HOME/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.qr_node"'
+    cmd="bash" args="-lc &quot;$HOME/robotics/ros2-topological-mapping-navigation/ros2_ws/src/topological_nav/scripts/ros_launch_node.sh $ROBOT $HOME/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.qr_node&quot;"
     output="screen"/>
 
   <executable
-    cmd='bash -lc "$HOME/robotics/ros2-topological-mapping-navigation/ros2_ws/src/topological_nav/scripts/ros_launch_node.sh $(var robot_name) $HOME/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.follow_manager"'
+    cmd="bash" args="-lc &quot;$HOME/robotics/ros2-topological-mapping-navigation/ros2_ws/src/topological_nav/scripts/ros_launch_node.sh $ROBOT $HOME/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.follow_manager&quot;"
     output="screen"/>
 
   <executable
-    cmd='bash -lc "$HOME/robotics/ros2-topological-mapping-navigation/ros2_ws/src/topological_nav/scripts/ros_launch_node.sh $(var robot_name) ros2 run topological_nav tts_node"'
+    cmd="bash" args="-lc &quot;$HOME/robotics/ros2-topological-mapping-navigation/ros2_ws/src/topological_nav/scripts/ros_launch_node.sh $ROBOT ros2 run topological_nav tts_node&quot;"
     output="screen"/>
 </launch>
