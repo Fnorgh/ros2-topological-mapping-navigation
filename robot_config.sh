@@ -1,29 +1,37 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
-#  Robot name → ROS config lookup
-#  Add a new robot by copying one of the blocks below.
+#  Looks up ROS_DOMAIN_ID and ROS_DISCOVERY_SERVER for a given robot name
+#  by calling robot-setup.sh (the same script used in the launch files).
+#
 #  Usage in any start script:
-#    ROBOT="snapper"
-#    source "$(dirname "$0")/robot_config.sh"
+#    ROBOT="galapagos"
+#    source "$(dirname "$0")/robot_config.sh" || exit 1
 # ─────────────────────────────────────────────────────────────────────────────
 
-case "$ROBOT" in
-  snapper)
-    ROBOT_NAME="snapper"
-    ROS_DOMAIN_ID="4"
-    ROS_DISCOVERY_SERVER=";;;;10.194.16.39:11811;"
-    ;;
-  # add more robots below:
-  # robotics4)
-  #   ROBOT_NAME="robotics4"
-  #   ROS_DOMAIN_ID="1"
-  #   ROS_DISCOVERY_SERVER=";10.194.16.36:11811;"
-  #   ;;
-  *)
-    echo "ERROR: Unknown robot '$ROBOT'"
-    echo "       Add it to robot_config.sh"
-    exit 1
-    ;;
-esac
+if [ -z "$ROBOT" ]; then
+  echo "ERROR: ROBOT is not set"
+  exit 1
+fi
+
+# Run robot-setup.sh with the robot name and capture the resulting environment
+_tmp=$(mktemp)
+bash -c "printf '%s' '$ROBOT' | robot-setup.sh && env" 2>/dev/null > "$_tmp"
+
+if [ ! -s "$_tmp" ]; then
+  echo "ERROR: robot-setup.sh failed or not found for robot '$ROBOT'"
+  rm -f "$_tmp"
+  exit 1
+fi
+
+ROS_DOMAIN_ID=$(grep '^ROS_DOMAIN_ID=' "$_tmp" | cut -d= -f2- | tr -d '[:space:]')
+ROS_DISCOVERY_SERVER=$(grep '^ROS_DISCOVERY_SERVER=' "$_tmp" | cut -d= -f2-)
+rm -f "$_tmp"
+
+ROBOT_NAME="$ROBOT"
+
+if [ -z "$ROS_DOMAIN_ID" ]; then
+  echo "ERROR: Could not determine ROS_DOMAIN_ID for robot '$ROBOT'"
+  exit 1
+fi
 
 echo "==> Robot: $ROBOT_NAME  |  Domain: $ROS_DOMAIN_ID  |  Discovery: $ROS_DISCOVERY_SERVER"
