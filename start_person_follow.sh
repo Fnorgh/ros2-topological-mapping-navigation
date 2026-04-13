@@ -18,6 +18,8 @@ source $WS/install/setup.bash"
 echo "==> Pulling latest changes..."
 cd $REPO && git pull
 
+chmod +x $REPO/ros2_ws/src/topological_nav/scripts/ros_launch_node.sh
+
 echo "==> Building package..."
 cd $WS && colcon build --packages-select topological_nav
 source $WS/install/setup.bash
@@ -28,7 +30,7 @@ echo "==> Opening terminals..."
 # Show 5 fingers to start following; show 5 again to stop and return to idle.
 gnome-terminal --title="Person Follow" -- bash -c "
 $ROS_ENV
-ros2 launch topological_nav person_follow.launch.xml robot_name:=$ROBOT_NAME
+ros2 launch topological_nav person_follow.launch.xml robot_name:=$ROBOT robot_name:=$ROBOT_NAME
 exec bash"
 
 # Terminal 2: Speak listener (audio plays on this computer)
