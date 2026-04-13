@@ -55,15 +55,6 @@ class GestureNode(Node):
             '/color/image_raw',
         ]
         self._image_subs = []
-        for topic in self.image_topics:
-            self._image_subs.append(
-                self.create_subscription(
-                    Image,
-                    topic,
-                    lambda msg, topic=topic: self.image_callback(msg, topic),
-                    qos_profile_sensor_data,
-                )
-            )
         self.create_subscription(
             Bool, '/gesture_mode_enabled', self.mode_callback, STATE_QOS
         )
@@ -104,8 +95,33 @@ class GestureNode(Node):
         self.wrist_x_history.clear()
         self.last_published = GESTURE_NONE
         self.last_publish_time = 0.0
+        self.last_image_topic = None
+        if self.enabled:
+            self._create_image_subscriptions()
+        else:
+            self._destroy_image_subscriptions()
         state = 'ENABLED' if self.enabled else 'DISABLED'
         self.get_logger().info(f'Gesture mode {state}')
+
+    def _create_image_subscriptions(self):
+        if self._image_subs:
+            return
+        for topic in self.image_topics:
+            self._image_subs.append(
+                self.create_subscription(
+                    Image,
+                    topic,
+                    lambda msg, topic=topic: self.image_callback(msg, topic),
+                    qos_profile_sensor_data,
+                )
+            )
+
+    def _destroy_image_subscriptions(self):
+        if not self._image_subs:
+            return
+        for sub in self._image_subs:
+            self.destroy_subscription(sub)
+        self._image_subs.clear()
 
     def image_callback(self, msg: Image, topic: str):
         if not self.enabled:

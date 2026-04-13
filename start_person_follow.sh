@@ -40,5 +40,5 @@ exec bash"
 
 echo "==> Person follow launched silently."
 echo "    Show 5 fingers to start following."
-echo "    YOLO runs only while following is active."
+echo "    While following: YOLO only."
 echo "    If no person is seen for 5 seconds, it returns to gesture mode."
