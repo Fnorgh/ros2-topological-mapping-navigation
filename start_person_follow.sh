@@ -3,7 +3,6 @@
 #  Set the robot name — everything else is auto-filled from robot_config.sh
 # ─────────────────────────────────────────────
 ROBOT="leatherback"
-source "$(dirname "$0")/robot_config.sh" || exit 1
 # ─────────────────────────────────────────────
 
 WS=~/robotics/ros2-topological-mapping-navigation/ros2_ws
@@ -24,7 +23,7 @@ echo "==> Opening terminals..."
 # Show 5 fingers to start following; show 5 again to stop and return to idle.
 gnome-terminal --title="Person Follow" -- bash -c "
 $ROS_ENV
-ros2 launch topological_nav person_follow.launch.xml robot_name:=$ROBOT_NAME
+ros2 launch topological_nav person_follow.launch.xml
 exec bash"
 
 # Terminal 2: Speak listener (audio plays on this computer)
