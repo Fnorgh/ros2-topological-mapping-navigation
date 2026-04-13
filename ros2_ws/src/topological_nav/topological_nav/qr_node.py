@@ -4,9 +4,13 @@ from std_msgs.msg import String, Bool
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import cv2
+import time
 
 # Published to /qr_detected (String) when a QR code is read.
-# Scanning is only active while /qr_scan_active (Bool True) has been received.
+# DEBUG MODE: always scanning — no /qr_scan_active gate required.
+# Same code will not re-fire within COOLDOWN_SEC seconds.
+
+COOLDOWN_SEC = 2.0
 
 
 class QRNode(Node):
@@ -21,14 +25,16 @@ class QRNode(Node):
         self.create_subscription(
             Bool, '/qr_scan_active', self.active_callback, 10)
 
-        self.bridge   = CvBridge()
-        self.detector = cv2.QRCodeDetector()
-        self.active   = False
+        self.bridge      = CvBridge()
+        self.detector    = cv2.QRCodeDetector()
+        self.active      = True   # always on for debug
         self.last_result = ''
+        self.last_time   = 0.0
 
-        self.get_logger().info('QR node ready — waiting for /qr_scan_active')
+        self.get_logger().info('QR node ready — DEBUG: scanning always active')
 
     def active_callback(self, msg):
+        # still honour the topic so the rest of the system works normally
         self.active = msg.data
         if self.active:
             self.last_result = ''
@@ -41,9 +47,10 @@ class QRNode(Node):
         frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
         data, _, _ = self.detector.detectAndDecode(frame)
 
-        if data and data != self.last_result:
+        now = time.monotonic()
+        if data and (data != self.last_result or now - self.last_time > COOLDOWN_SEC):
             self.last_result = data
-            self.active = False
+            self.last_time   = now
             out = String()
             out.data = data
             self.pub.publish(out)
