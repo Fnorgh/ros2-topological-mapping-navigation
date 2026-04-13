@@ -2,10 +2,13 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Bool, Int32
 
-# State machine controlled by gesture 5 (open hand).
+# State machine controlled by gestures.
 #
-# IDLE      → robot stopped, gesture scanning OFF, QR scanning OFF
-# FOLLOWING → person_follow active, QR scanning ON, gesture 5 stops it
+# IDLE      → robot stopped, QR scanning OFF
+#   gesture 5 (open hand) → FOLLOWING
+#
+# FOLLOWING → person_follow active, QR scanning ON
+#   any other gesture (1, 2, 3, wave) → IDLE
 #
 # /gesture (Int32)             → consumed here
 # /person_follow_active (Bool) → published here (default QoS)
@@ -32,10 +35,10 @@ class FollowManager(Node):
         self.create_timer(3.0, self._status_log)
 
         self.get_logger().info(
-            'Follow manager ready — IDLE. Show 5 fingers to start/stop following.')
+            'Follow manager ready — IDLE. Show 5 fingers to follow, any other gesture to stop.')
 
     def _status_log(self):
-        state = 'FOLLOWING (gesture 5 to stop)' if self.following else 'IDLE — show 5 fingers to start'
+        state = 'FOLLOWING (show 1/2/3/wave to stop)' if self.following else 'IDLE — show 5 fingers to start'
         self.get_logger().info(f'State: {state}')
 
     def _startup_publish(self):
@@ -46,16 +49,17 @@ class FollowManager(Node):
             self.get_logger().info('Startup broadcast done — waiting for gesture 5')
 
     def gesture_callback(self, msg: Int32):
-        if msg.data != GESTURE_FIVE:
-            return
+        gesture = msg.data
 
-        self.following = not self.following
-        self._publish(self.following)
-
-        if self.following:
+        if gesture == GESTURE_FIVE and not self.following:
+            self.following = True
+            self._publish(True)
             self.get_logger().info('Gesture 5 → FOLLOWING started (QR scanning ON)')
-        else:
-            self.get_logger().info('Gesture 5 → IDLE (following stopped, QR scanning OFF)')
+
+        elif gesture != GESTURE_FIVE and self.following:
+            self.following = False
+            self._publish(False)
+            self.get_logger().info(f'Gesture {gesture} → IDLE (following stopped, QR scanning OFF)')
 
     def _publish(self, state: bool):
         out = Bool()
