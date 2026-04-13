@@ -48,9 +48,22 @@ class GestureNode(Node):
         self.pub = self.create_publisher(Int32, '/gesture', 10)
         self.bridge = CvBridge()
 
-        self.create_subscription(
-            Image, '/oakd/rgb/preview/image_raw', self.image_callback, qos_profile_sensor_data
-        )
+        self.image_topics = [
+            '/oakd/rgb/image_raw',
+            '/oakd/rgb/preview/image_raw',
+            '/camera/color/image_raw',
+            '/color/image_raw',
+        ]
+        self._image_subs = []
+        for topic in self.image_topics:
+            self._image_subs.append(
+                self.create_subscription(
+                    Image,
+                    topic,
+                    lambda msg, topic=topic: self.image_callback(msg, topic),
+                    qos_profile_sensor_data,
+                )
+            )
         self.create_subscription(
             Bool, '/gesture_mode_enabled', self.mode_callback, STATE_QOS
         )
@@ -58,26 +71,30 @@ class GestureNode(Node):
         self.enabled = False
         self._last_process = 0.0
         self.PROCESS_INTERVAL = 0.25
+        self.last_image_topic = None
 
         self.wrist_x_history = []
         self.WAVE_WINDOW = 8
         self.WAVE_THRESHOLD = 0.18
 
         self.gesture_buffer = []
-        self.BUFFER_LEN = 4
+        self.BUFFER_LEN = 3
         self.last_published = GESTURE_NONE
         self.last_publish_time = 0.0
         self.COOLDOWN_S = 2.0
 
         self.hands = mp.solutions.hands.Hands(
             static_image_mode=False,
-            model_complexity=0,
+            model_complexity=1,
             max_num_hands=1,
-            min_detection_confidence=0.2,
-            min_tracking_confidence=0.2,
+            min_detection_confidence=0.15,
+            min_tracking_confidence=0.15,
         )
 
-        self.get_logger().info('Gesture node ready - waiting for gesture mode')
+        self.get_logger().info(
+            'Gesture node ready - waiting for gesture mode on '
+            + ', '.join(self.image_topics)
+        )
 
     def mode_callback(self, msg: Bool):
         if msg.data == self.enabled:
@@ -90,7 +107,7 @@ class GestureNode(Node):
         state = 'ENABLED' if self.enabled else 'DISABLED'
         self.get_logger().info(f'Gesture mode {state}')
 
-    def image_callback(self, msg: Image):
+    def image_callback(self, msg: Image, topic: str):
         if not self.enabled:
             return
 
@@ -98,9 +115,21 @@ class GestureNode(Node):
         if now - self._last_process < self.PROCESS_INTERVAL:
             return
         self._last_process = now
+        if topic != self.last_image_topic:
+            self.last_image_topic = topic
+            self.get_logger().info(f'Gesture images received from {topic}')
 
-        frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
-        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        rgb_frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='rgb8')
+        h, w = rgb_frame.shape[:2]
+
+        # MediaPipe is noticeably more reliable on the tiny preview stream
+        # if we upscale before inference.
+        if min(h, w) < 400:
+            scale = max(2, int(640 / min(h, w)))
+            rgb_frame = cv2.resize(
+                rgb_frame, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC
+            )
+
         rgb_frame.flags.writeable = False
         result = self.hands.process(rgb_frame)
         rgb_frame.flags.writeable = True
@@ -118,7 +147,10 @@ class GestureNode(Node):
                 elif total in (1, 2, 3):
                     gesture = total
         else:
-            self.get_logger().info('No hand detected', throttle_duration_sec=2.0)
+            self.get_logger().info(
+                f'No hand detected on {topic} ({w}x{h})',
+                throttle_duration_sec=2.0,
+            )
 
         self._update_buffer(gesture)
 
