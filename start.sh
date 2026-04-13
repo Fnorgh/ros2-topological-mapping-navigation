@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────
-#  CHANGE THESE TWO VALUES FOR YOUR ROBOT
+#  Set the robot name — everything else is auto-filled from robot_config.sh
 # ─────────────────────────────────────────────
-ROBOT_NAME="snapper"
-ROS_DOMAIN_ID="4"
-ROS_DISCOVERY_SERVER=";;;;10.194.16.39:11811;"
+ROBOT="snapper"
+source "$(dirname "$0")/robot_config.sh" || exit 1
 # ─────────────────────────────────────────────
 
 WS=~/robotics/ros2-topological-mapping-navigation/ros2_ws
