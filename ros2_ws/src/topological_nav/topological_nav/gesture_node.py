@@ -76,6 +76,9 @@ class GestureNode(Node):
 
     def image_callback(self, msg):
         frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='rgb8')
+        self.get_logger().info(
+            f'Frame size: {frame.shape[1]}x{frame.shape[0]}',
+            throttle_duration_sec=5.0)
         result = self.hands.process(frame)
 
         gesture = GESTURE_NONE
