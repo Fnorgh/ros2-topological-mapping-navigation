@@ -1,16 +1,26 @@
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import QoSProfile, DurabilityPolicy, ReliabilityPolicy
 from std_msgs.msg import Bool, Int32
 
 # State machine controlled by gesture 5 (open hand).
 #
-# IDLE      → robot stopped, gesture scanning active, QR scanning OFF
+# IDLE      → robot stopped, gesture scanning OFF, QR scanning OFF
 # FOLLOWING → person_follow active, QR scanning ON, gesture 5 stops it
 #
-# /gesture (Int32)          → consumed here
-# /person_follow_active (Bool) → published here, gates person_follow_node and qr_node
+# /gesture (Int32)             → consumed here
+# /person_follow_active (Bool) → published here with transient_local (latched)
+#                                so late-starting nodes always get current state
 
 GESTURE_FIVE = 5
+
+# Transient-local = ROS2 equivalent of a latched topic.
+# Any node that subscribes after the last publish still receives the current value.
+_LATCHED_QOS = QoSProfile(
+    depth=1,
+    durability=DurabilityPolicy.TRANSIENT_LOCAL,
+    reliability=ReliabilityPolicy.RELIABLE,
+)
 
 
 class FollowManager(Node):
@@ -18,21 +28,16 @@ class FollowManager(Node):
     def __init__(self):
         super().__init__('follow_manager')
 
-        self.follow_pub = self.create_publisher(Bool, '/person_follow_active', 10)
+        self.follow_pub = self.create_publisher(Bool, '/person_follow_active', _LATCHED_QOS)
         self.create_subscription(Int32, '/gesture', self.gesture_callback, 10)
 
         self.following = False
 
-        # Publish initial IDLE state after 1 s so other nodes have time to start
-        self._init_timer = self.create_timer(1.0, self._send_initial_state)
-
-        self.get_logger().info(
-            'Follow manager ready — show 5 fingers to start/stop following')
-
-    def _send_initial_state(self):
+        # Publish IDLE immediately — transient_local ensures any node that
+        # starts later (e.g. person_follow_node) still receives this value.
         self._publish(False)
-        self.destroy_timer(self._init_timer)
-        self.get_logger().info('Initial state: IDLE (following OFF)')
+        self.get_logger().info(
+            'Follow manager ready — IDLE. Show 5 fingers to start/stop following.')
 
     def gesture_callback(self, msg: Int32):
         if msg.data != GESTURE_FIVE:

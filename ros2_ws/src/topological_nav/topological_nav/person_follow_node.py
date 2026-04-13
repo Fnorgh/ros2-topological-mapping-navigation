@@ -15,11 +15,18 @@ if _colcon_prefix:
 
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import QoSProfile, DurabilityPolicy, ReliabilityPolicy
 from geometry_msgs.msg import TwistStamped
 from sensor_msgs.msg import Image
 from std_msgs.msg import Bool, String
 from cv_bridge import CvBridge
 from ultralytics import YOLO
+
+_LATCHED_QOS = QoSProfile(
+    depth=1,
+    durability=DurabilityPolicy.TRANSIENT_LOCAL,
+    reliability=ReliabilityPolicy.RELIABLE,
+)
 
 # ── Proportional control ──────────────────────────────────────────────────────
 KP_ANGULAR       = 1.5    # rad/s per normalised pixel offset
@@ -51,10 +58,11 @@ class PersonFollowNode(Node):
         self.create_subscription(
             Image, '/oakd/rgb/preview/image_raw', self.image_callback, 10)
 
-        # Publish True/False on this topic to enable / disable following.
-        # e.g.:  ros2 topic pub /person_follow_active std_msgs/Bool "data: true"
+        # Controlled by follow_manager via gesture 5.
+        # transient_local QoS matches the publisher so the initial False is received
+        # even if this node starts after follow_manager.
         self.create_subscription(
-            Bool, '/person_follow_active', self.active_callback, 10)
+            Bool, '/person_follow_active', self.active_callback, _LATCHED_QOS)
 
         self.person_visible    = False
         self.last_announce_time = 0.0
