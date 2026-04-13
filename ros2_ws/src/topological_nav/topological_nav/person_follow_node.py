@@ -27,7 +27,7 @@ KP_ANGULAR = 1.5
 LINEAR_SPEED = 0.15
 STOP_HEIGHT_RATIO = 0.80
 MIN_CONF = 0.25
-SEARCH_TURN_SPEED = 0.0
+SEARCH_TURN_SPEED = 0.25
 NO_PERSON_TIMEOUT_S = 5.0
 
 STATE_QOS = QoSProfile(
@@ -66,6 +66,9 @@ class PersonFollowNode(Node):
         self.ANNOUNCE_INTERVAL = 1
         self.last_person_time = time.time()
         self.timeout_sent = False
+        self.target_linear_x = 0.0
+        self.target_angular_z = 0.0
+        self.create_timer(0.1, self.publish_current_cmd)
 
         self.get_logger().info('Person follow node ready - waiting on /person_follow_active')
 
@@ -80,6 +83,11 @@ class PersonFollowNode(Node):
         self.timeout_sent = False
         if not self.active:
             self._publish_stop()
+
+    def publish_current_cmd(self):
+        if not self.active:
+            return
+        self._publish_cmd(self.target_linear_x, self.target_angular_z)
 
     def image_callback(self, msg: Image):
         if not self.active:
@@ -102,9 +110,8 @@ class PersonFollowNode(Node):
         if box is None:
             self.get_logger().info('No person detected')
             self.person_visible = False
-            cmd = TwistStamped()
-            cmd.twist.angular.z = SEARCH_TURN_SPEED
-            self.cmd_pub.publish(cmd)
+            self.target_linear_x = 0.0
+            self.target_angular_z = SEARCH_TURN_SPEED
 
             now = time.time()
             if (now - self.last_person_time) >= NO_PERSON_TIMEOUT_S and not self.timeout_sent:
@@ -135,10 +142,8 @@ class PersonFollowNode(Node):
         height_ratio = box_h / h
         linear_x = 0.0 if height_ratio >= STOP_HEIGHT_RATIO else LINEAR_SPEED
 
-        cmd = TwistStamped()
-        cmd.twist.linear.x = linear_x
-        cmd.twist.angular.z = angular_z
-        self.cmd_pub.publish(cmd)
+        self.target_linear_x = linear_x
+        self.target_angular_z = angular_z
 
         self.get_logger().info(
             f'offset={offset:+.2f}  h_ratio={height_ratio:.2f}  '
@@ -157,8 +162,18 @@ class PersonFollowNode(Node):
                     best_box = (x1, y1, x2, y2)
         return best_box
 
+    def _publish_cmd(self, linear_x: float, angular_z: float):
+        cmd = TwistStamped()
+        cmd.header.stamp = self.get_clock().now().to_msg()
+        cmd.header.frame_id = 'base_link'
+        cmd.twist.linear.x = linear_x
+        cmd.twist.angular.z = angular_z
+        self.cmd_pub.publish(cmd)
+
     def _publish_stop(self):
-        self.cmd_pub.publish(TwistStamped())
+        self.target_linear_x = 0.0
+        self.target_angular_z = 0.0
+        self._publish_cmd(0.0, 0.0)
 
 
 def main(args=None):
