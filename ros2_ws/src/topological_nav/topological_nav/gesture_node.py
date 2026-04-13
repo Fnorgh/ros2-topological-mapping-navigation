@@ -55,14 +55,17 @@ class GestureNode(Node):
             '/color/image_raw',
         ]
         self._image_subs = []
-        self.create_subscription(
+        self.mode_sub = self.create_subscription(
             Bool, '/gesture_mode_enabled', self.mode_callback, STATE_QOS
         )
 
-        self.enabled = False
+        # Start enabled so the initial "show 5 fingers to start" state works
+        # even if the follow_manager state message arrives late.
+        self.enabled = True
         self._last_process = 0.0
-        self.PROCESS_INTERVAL = 0.25
+        self.PROCESS_INTERVAL = 0.2
         self.last_image_topic = None
+        self.last_frame_time = 0.0
 
         self.wrist_x_history = []
         self.WAVE_WINDOW = 8
@@ -75,15 +78,17 @@ class GestureNode(Node):
         self.COOLDOWN_S = 2.0
 
         self.hands = mp.solutions.hands.Hands(
-            static_image_mode=False,
+            static_image_mode=True,
             model_complexity=1,
             max_num_hands=1,
-            min_detection_confidence=0.15,
-            min_tracking_confidence=0.15,
+            min_detection_confidence=0.3,
+            min_tracking_confidence=0.3,
         )
+        self._create_image_subscriptions()
+        self.create_timer(5.0, self._image_watchdog)
 
         self.get_logger().info(
-            'Gesture node ready - waiting for gesture mode on '
+            'Gesture node ready - gesture mode starts enabled on '
             + ', '.join(self.image_topics)
         )
 
@@ -123,11 +128,27 @@ class GestureNode(Node):
             self.destroy_subscription(sub)
         self._image_subs.clear()
 
+    def _image_watchdog(self):
+        if not self.enabled:
+            return
+        if self.last_frame_time == 0.0:
+            self.get_logger().warn(
+                'Gesture mode enabled but no image frames received yet from '
+                + ', '.join(self.image_topics)
+            )
+            return
+        age = time.time() - self.last_frame_time
+        if age > 5.0:
+            self.get_logger().warn(
+                f'Gesture image stream stalled for {age:.1f}s. Last topic: {self.last_image_topic}'
+            )
+
     def image_callback(self, msg: Image, topic: str):
         if not self.enabled:
             return
 
         now = time.time()
+        self.last_frame_time = now
         if now - self._last_process < self.PROCESS_INTERVAL:
             return
         self._last_process = now
