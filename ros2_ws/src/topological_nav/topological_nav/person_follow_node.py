@@ -39,7 +39,7 @@ class PersonFollowNode(Node):
         self.bridge = CvBridge()
         self.active = False
         self._frame_count = 0
-        self.PROCESS_EVERY = 3  # only run YOLO on every Nth frame
+        self.PROCESS_EVERY = 6  # only run YOLO on every Nth frame (~2.5 fps)
 
         # YOLOv8n – downloads weights (~6 MB) on first run
         self.model = YOLO('yolov8n.pt')

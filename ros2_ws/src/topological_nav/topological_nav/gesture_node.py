@@ -17,7 +17,7 @@ if _colcon_prefix:
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Int32
+from std_msgs.msg import Int32, Bool
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import mediapipe as mp
@@ -46,6 +46,10 @@ class GestureNode(Node):
 
         self.create_subscription(
             Image, '/oakd/rgb/preview/image_raw', self.image_callback, 10)
+        self.create_subscription(
+            Bool, '/person_follow_active', self._follow_callback, 10)
+
+        self._following = False
 
         # static_image_mode=False uses cheap tracking between detections
         self.hands = mp.solutions.hands.Hands(
@@ -55,8 +59,7 @@ class GestureNode(Node):
             min_tracking_confidence=0.3,
         )
 
-        # Only process 1 frame per second to save CPU on RPi
-        self.PROCESS_EVERY_S  = 1.0
+        # Process rate: 1 fps when idle, 3 fps when following (YOLO is also running)
         self._last_process    = 0.0
 
         # Wave detection: track wrist x over a short history
@@ -79,9 +82,14 @@ class GestureNode(Node):
     # Image callback
     # ------------------------------------------------------------------
 
+    def _follow_callback(self, msg: Bool):
+        self._following = msg.data
+
     def image_callback(self, msg):
         now = time.time()
-        if now - self._last_process < self.PROCESS_EVERY_S:
+        # Back off to every 3 s while YOLO is also running; 1 s when idle
+        interval = 3.0 if self._following else 1.0
+        if now - self._last_process < interval:
             return
         self._last_process = now
 
