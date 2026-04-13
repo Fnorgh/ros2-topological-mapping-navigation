@@ -87,6 +87,7 @@ class GestureNode(Node):
         self._following = msg.data
 
     def image_callback(self, msg):
+        self.get_logger().info('frame received', throttle_duration_sec=2.0)
         now = time.time()
         if now - self._last_process < self.PROCESS_INTERVAL:
             return
