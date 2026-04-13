@@ -7,7 +7,10 @@
     cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.person_follow_node"'
     output="screen"/>
 
-  <!-- Gesture node runs on your computer, not the robot — see start_person_follow.sh -->
+  <!-- Gesture node — runs on robot, throttled to 5fps to save CPU -->
+  <executable
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.gesture_node"'
+    output="screen"/>
 
   <!-- QR node — scans QR codes when /person_follow_active is True -->
   <executable

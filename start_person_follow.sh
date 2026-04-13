@@ -31,13 +31,7 @@ $ROS_ENV
 ros2 launch topological_nav person_follow.launch.xml robot_name:=$ROBOT_NAME
 exec bash"
 
-# Terminal 2: Gesture node — runs locally (offloaded from RPi)
-gnome-terminal --title="Gesture Node (local)" -- bash -c "
-$ROS_ENV
-$WS/venv/bin/python -m topological_nav.gesture_node
-exec bash"
-
-# Terminal 3: Speak listener (audio plays on this computer)
+# Terminal 2: Speak listener (audio plays on this computer)
 gnome-terminal --title="Speak Listener" -- bash -c "
 $ROS_ENV
 python3 $REPO/ros2_ws/src/topological_nav/topological_nav/speak_listener.py
@@ -45,7 +39,7 @@ exec bash"
 
 sleep 5
 
-# Terminal 4: Debug — live gesture and state output
+# Terminal 3: Debug — live gesture and state output
 gnome-terminal --title="DEBUG: Gesture + State" -- bash -c "
 $ROS_ENV
 echo '=== Gesture codes: 1=index 2=peace 3=three 5=open-hand ==='
