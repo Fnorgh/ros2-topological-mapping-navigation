@@ -7,7 +7,7 @@ import cv2
 import time
 
 # Published to /qr_detected (String) when a QR code is read.
-# DEBUG MODE: always scanning — no /qr_scan_active gate required.
+# Scanning is active only while /person_follow_active (Bool True) is received.
 # Same code will not re-fire within COOLDOWN_SEC seconds.
 
 COOLDOWN_SEC = 2.0
@@ -23,22 +23,23 @@ class QRNode(Node):
         self.create_subscription(
             Image, '/oakd/rgb/preview/image_raw', self.image_callback, 10)
         self.create_subscription(
-            Bool, '/qr_scan_active', self.active_callback, 10)
+            Bool, '/person_follow_active', self.active_callback, 10)
 
         self.bridge      = CvBridge()
         self.detector    = cv2.QRCodeDetector()
-        self.active      = True   # always on for debug
+        self.active      = False
         self.last_result = ''
         self.last_time   = 0.0
 
-        self.get_logger().info('QR node ready — DEBUG: scanning always active')
+        self.get_logger().info('QR node ready — scanning active when /person_follow_active is True')
 
     def active_callback(self, msg):
-        # still honour the topic so the rest of the system works normally
         self.active = msg.data
         if self.active:
             self.last_result = ''
-            self.get_logger().info('QR scanning activated')
+            self.get_logger().info('QR scanning activated (person follow active)')
+        else:
+            self.get_logger().info('QR scanning deactivated (person follow inactive)')
 
     def image_callback(self, msg):
         if not self.active:

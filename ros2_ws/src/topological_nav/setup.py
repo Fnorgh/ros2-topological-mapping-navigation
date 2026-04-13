@@ -34,6 +34,7 @@ setup(
             'tts_node            = topological_nav.tts_node:main',
             'person_follow_node  = topological_nav.person_follow_node:main',
             'speak_listener      = topological_nav.speak_listener:main',
+            'follow_manager      = topological_nav.follow_manager:main',
         ],
     },
 )
