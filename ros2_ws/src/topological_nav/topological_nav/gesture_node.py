@@ -46,16 +46,32 @@ class GestureNode(Node):
 
         self.pub = self.create_publisher(Int32, '/gesture', 10)
         self.bridge = CvBridge()
+        default_image_topics = [
+            '/oakd/rgb/preview/image_raw',
+            '/oakd/rgb/image_raw',
+            '/camera/color/image_raw',
+            '/color/image_raw',
+        ]
         self.image_topic = self.declare_parameter(
             'image_topic', '/oakd/rgb/preview/image_raw'
         ).value
-
-        self.create_subscription(
-            Image,
-            self.image_topic,
-            self.image_callback,
-            qos_profile_sensor_data,
+        self.image_topics = list(
+            self.declare_parameter('image_topics', default_image_topics).value
         )
+        if self.image_topic and self.image_topic not in self.image_topics:
+            self.image_topics.insert(0, self.image_topic)
+        self.image_topics = list(dict.fromkeys(self.image_topics))
+
+        self._image_subs = []
+        for topic in self.image_topics:
+            self._image_subs.append(
+                self.create_subscription(
+                    Image,
+                    topic,
+                    lambda msg, topic=topic: self.image_callback(msg, topic),
+                    qos_profile_sensor_data,
+                )
+            )
         self.create_subscription(
             Bool,
             '/person_follow_active',
@@ -77,6 +93,9 @@ class GestureNode(Node):
         # Process at ~5 fps - fast enough to feel responsive on a local machine.
         self._last_process = 0.0
         self.PROCESS_INTERVAL = 0.2
+        self._last_frame_time = 0.0
+        self._last_frame_topic = None
+        self.create_timer(5.0, self._log_image_status)
 
         # Wave detection.
         self.wrist_x_history = []
@@ -93,16 +112,21 @@ class GestureNode(Node):
         self.COOLDOWN_S = 2.0
 
         self.get_logger().info(
-            f'Gesture node ready - listening on {self.image_topic}'
+            'Gesture node ready - listening on '
+            + ', '.join(self.image_topics)
         )
 
     def _follow_callback(self, msg: Bool):
         self._following = msg.data
 
-    def image_callback(self, msg: Image):
+    def image_callback(self, msg: Image, topic: str):
+        now = time.time()
+        self._last_frame_time = now
+        if topic != self._last_frame_topic:
+            self._last_frame_topic = topic
+            self.get_logger().info(f'Receiving images from {topic}')
         self.get_logger().info('frame received', throttle_duration_sec=2.0)
 
-        now = time.time()
         if now - self._last_process < self.PROCESS_INTERVAL:
             return
         self._last_process = now
@@ -139,6 +163,21 @@ class GestureNode(Node):
             self.get_logger().info('NO HAND - hold open hand close to camera')
 
         self._update_buffer(gesture)
+
+    def _log_image_status(self):
+        if self._last_frame_time == 0.0:
+            self.get_logger().warn(
+                'No image frames received yet. Tried topics: '
+                + ', '.join(self.image_topics)
+            )
+            return
+
+        age = time.time() - self._last_frame_time
+        if age > 5.0:
+            self.get_logger().warn(
+                f'Image stream stalled for {age:.1f}s. Last topic: '
+                f'{self._last_frame_topic}'
+            )
 
     def _fingers_up(self, lm):
         """Count the four main fingers that are extended."""
