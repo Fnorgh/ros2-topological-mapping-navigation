@@ -51,8 +51,9 @@ class PersonFollowNode(Node):
         self.create_subscription(
             Image, '/oakd/rgb/preview/image_raw', self.image_callback, 10)
 
-        # Publish True/False on this topic to enable / disable following.
-        # e.g.:  ros2 topic pub /person_follow_active std_msgs/Bool "data: true"
+        # Controlled by follow_manager via gesture 5.
+        # transient_local QoS matches the publisher so the initial False is received
+        # even if this node starts after follow_manager.
         self.create_subscription(
             Bool, '/person_follow_active', self.active_callback, 10)
 

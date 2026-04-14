@@ -14,6 +14,7 @@ setup(
             'launch/topological_nav.launch.xml',
             'launch/mapping.launch.xml',
             'launch/person_follow.launch.xml',
+            'launch/person_follow.launch.py',
         ]),
     ],
     install_requires=['setuptools'],
@@ -34,6 +35,7 @@ setup(
             'tts_node            = topological_nav.tts_node:main',
             'person_follow_node  = topological_nav.person_follow_node:main',
             'speak_listener      = topological_nav.speak_listener:main',
+            'follow_manager      = topological_nav.follow_manager:main',
         ],
     },
 )

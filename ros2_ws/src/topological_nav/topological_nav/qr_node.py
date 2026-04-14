@@ -4,9 +4,13 @@ from std_msgs.msg import String, Bool
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import cv2
+import time
 
 # Published to /qr_detected (String) when a QR code is read.
-# Scanning is only active while /qr_scan_active (Bool True) has been received.
+# Scanning is active only while /person_follow_active (Bool True) is received.
+# Same code will not re-fire within COOLDOWN_SEC seconds.
+
+COOLDOWN_SEC = 2.0
 
 
 class QRNode(Node):
@@ -19,20 +23,23 @@ class QRNode(Node):
         self.create_subscription(
             Image, '/oakd/rgb/preview/image_raw', self.image_callback, 10)
         self.create_subscription(
-            Bool, '/qr_scan_active', self.active_callback, 10)
+            Bool, '/person_follow_active', self.active_callback, 10)
 
-        self.bridge   = CvBridge()
-        self.detector = cv2.QRCodeDetector()
-        self.active   = False
+        self.bridge      = CvBridge()
+        self.detector    = cv2.QRCodeDetector()
+        self.active      = False
         self.last_result = ''
+        self.last_time   = 0.0
 
-        self.get_logger().info('QR node ready — waiting for /qr_scan_active')
+        self.get_logger().info('QR node ready — scanning active when /person_follow_active is True')
 
     def active_callback(self, msg):
         self.active = msg.data
         if self.active:
             self.last_result = ''
-            self.get_logger().info('QR scanning activated')
+            self.get_logger().info('QR scanning activated (person follow active)')
+        else:
+            self.get_logger().info('QR scanning deactivated (person follow inactive)')
 
     def image_callback(self, msg):
         if not self.active:
@@ -41,9 +48,10 @@ class QRNode(Node):
         frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
         data, _, _ = self.detector.detectAndDecode(frame)
 
-        if data and data != self.last_result:
+        now = time.monotonic()
+        if data and (data != self.last_result or now - self.last_time > COOLDOWN_SEC):
             self.last_result = data
-            self.active = False
+            self.last_time   = now
             out = String()
             out.data = data
             self.pub.publish(out)
