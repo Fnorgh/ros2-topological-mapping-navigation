@@ -20,7 +20,7 @@ echo "==> Pulling latest changes..."
 cd $REPO && git pull
 
 echo "==> Building package..."
-cd $WS && colcon build --packages-select topological_nav
+cd $WS && colcon build --base-paths src --packages-select topological_nav
 source $WS/install/setup.bash
 
 echo "==> Opening terminals..."
