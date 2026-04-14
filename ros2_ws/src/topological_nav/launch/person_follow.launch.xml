@@ -4,16 +4,16 @@
   <!-- Person follow — YOLOv8n detects people, robot drives toward them -->
   <!-- Enable/disable: ros2 topic pub /person_follow_active std_msgs/Bool "data: true" -->
   <executable
-    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.person_follow_node"'
+    cmd='bash -c "unset ROS_LOCALHOST_ONLY &amp;&amp; ~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.person_follow_node"'
     output="screen"/>
 
   <!-- Gesture node — optional, for triggering other behaviours -->
   <executable
-    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.gesture_node"'
+    cmd='bash -c "unset ROS_LOCALHOST_ONLY &amp;&amp; ~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.gesture_node"'
     output="screen"/>
 
   <!-- Text-to-speech (robot side — no audio hardware, use speak_listener on your computer instead) -->
   <executable
-    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ros2 run topological_nav tts_node"'
+    cmd='bash -c "unset ROS_LOCALHOST_ONLY &amp;&amp; ros2 run topological_nav tts_node"'
     output="screen"/>
 </launch>
