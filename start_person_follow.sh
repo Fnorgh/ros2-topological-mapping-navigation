@@ -2,9 +2,9 @@
 # ─────────────────────────────────────────────
 #  CHANGE THESE FOR YOUR ROBOT
 # ─────────────────────────────────────────────
-ROBOT_NAME="snapper"
-ROS_DOMAIN_ID="4"
-ROS_DISCOVERY_SERVER=";;;;10.194.16.39:11811;"
+ROBOT_NAME="matamata"
+ROS_DOMAIN_ID="8"
+ROS_DISCOVERY_SERVER=";;;;;;;;10.194.16.61:11811;"
 # ─────────────────────────────────────────────
 
 WS=~/robotics/ros2-topological-mapping-navigation/ros2_ws
