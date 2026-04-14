@@ -1,0 +1,63 @@
+running egg_info
+creating ../../build/topological_nav/topological_nav.egg-info
+writing ../../build/topological_nav/topological_nav.egg-info/PKG-INFO
+writing dependency_links to ../../build/topological_nav/topological_nav.egg-info/dependency_links.txt
+writing entry points to ../../build/topological_nav/topological_nav.egg-info/entry_points.txt
+writing requirements to ../../build/topological_nav/topological_nav.egg-info/requires.txt
+writing top-level names to ../../build/topological_nav/topological_nav.egg-info/top_level.txt
+writing manifest file '../../build/topological_nav/topological_nav.egg-info/SOURCES.txt'
+reading manifest file '../../build/topological_nav/topological_nav.egg-info/SOURCES.txt'
+writing manifest file '../../build/topological_nav/topological_nav.egg-info/SOURCES.txt'
+running build
+running build_py
+creating /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav/build
+creating /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav/build/lib
+creating /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav/build/lib/topological_nav
+copying topological_nav/tour_manager.py -> /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav/build/lib/topological_nav
+copying topological_nav/tts_node.py -> /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav/build/lib/topological_nav
+copying topological_nav/speak_listener.py -> /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav/build/lib/topological_nav
+copying topological_nav/qr_node.py -> /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav/build/lib/topological_nav
+copying topological_nav/__init__.py -> /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav/build/lib/topological_nav
+copying topological_nav/person_follow_node.py -> /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav/build/lib/topological_nav
+copying topological_nav/gesture_node.py -> /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav/build/lib/topological_nav
+copying topological_nav/reactive_controller.py -> /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav/build/lib/topological_nav
+running install
+running install_lib
+creating /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/python3.12/site-packages/topological_nav
+copying /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav/build/lib/topological_nav/tour_manager.py -> /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/python3.12/site-packages/topological_nav
+copying /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav/build/lib/topological_nav/tts_node.py -> /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/python3.12/site-packages/topological_nav
+copying /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav/build/lib/topological_nav/speak_listener.py -> /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/python3.12/site-packages/topological_nav
+copying /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav/build/lib/topological_nav/qr_node.py -> /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/python3.12/site-packages/topological_nav
+copying /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav/build/lib/topological_nav/__init__.py -> /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/python3.12/site-packages/topological_nav
+copying /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav/build/lib/topological_nav/person_follow_node.py -> /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/python3.12/site-packages/topological_nav
+copying /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav/build/lib/topological_nav/gesture_node.py -> /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/python3.12/site-packages/topological_nav
+copying /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav/build/lib/topological_nav/reactive_controller.py -> /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/python3.12/site-packages/topological_nav
+byte-compiling /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/python3.12/site-packages/topological_nav/tour_manager.py to tour_manager.cpython-312.pyc
+byte-compiling /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/python3.12/site-packages/topological_nav/tts_node.py to tts_node.cpython-312.pyc
+byte-compiling /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/python3.12/site-packages/topological_nav/speak_listener.py to speak_listener.cpython-312.pyc
+byte-compiling /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/python3.12/site-packages/topological_nav/qr_node.py to qr_node.cpython-312.pyc
+byte-compiling /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/python3.12/site-packages/topological_nav/__init__.py to __init__.cpython-312.pyc
+byte-compiling /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/python3.12/site-packages/topological_nav/person_follow_node.py to person_follow_node.cpython-312.pyc
+byte-compiling /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/python3.12/site-packages/topological_nav/gesture_node.py to gesture_node.cpython-312.pyc
+byte-compiling /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/python3.12/site-packages/topological_nav/reactive_controller.py to reactive_controller.cpython-312.pyc
+running install_data
+creating /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/share/ament_index
+creating /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/share/ament_index/resource_index
+creating /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/share/ament_index/resource_index/packages
+copying resource/topological_nav -> /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/share/ament_index/resource_index/packages
+copying package.xml -> /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/share/topological_nav
+creating /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/share/topological_nav/launch
+copying launch/topological_nav.launch.xml -> /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/share/topological_nav/launch
+copying launch/mapping.launch.xml -> /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/share/topological_nav/launch
+copying launch/person_follow.launch.xml -> /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/share/topological_nav/launch
+running install_egg_info
+Copying ../../build/topological_nav/topological_nav.egg-info to /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/python3.12/site-packages/topological_nav-0.0.0-py3.12.egg-info
+running install_scripts
+Installing gesture_node script to /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/topological_nav
+Installing person_follow_node script to /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/topological_nav
+Installing qr_node script to /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/topological_nav
+Installing reactive_controller script to /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/topological_nav
+Installing speak_listener script to /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/topological_nav
+Installing tour_manager script to /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/topological_nav
+Installing tts_node script to /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/topological_nav
+writing list of installed files to '/home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav/install.log'

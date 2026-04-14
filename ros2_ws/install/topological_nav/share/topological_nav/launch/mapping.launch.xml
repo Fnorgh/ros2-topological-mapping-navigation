@@ -1,0 +1,33 @@
+<launch>
+  <arg name="robot_name" default="" description="TurtleBot name printed on the robot"/>
+
+  <!-- SLAM — builds the map as you drive -->
+  <executable
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ros2 launch turtlebot4_navigation slam.launch.py"'
+    output="screen"/>
+
+  <!-- RViz — visualise the map being built -->
+  <executable
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ros2 launch turtlebot4_viz view_robot.launch.py"'
+    output="screen"/>
+
+  <!-- Gesture node — test gestures during mapping -->
+  <executable
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.gesture_node"'
+    output="screen"/>
+
+  <!-- QR code scanner -->
+  <executable
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ros2 run topological_nav qr_node"'
+    output="screen"/>
+
+  <!-- Text-to-speech -->
+  <executable
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ros2 run topological_nav tts_node"'
+    output="screen"/>
+
+  <!-- Tour manager — navigate to landmarks, confirm with QR -->
+  <executable
+    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ros2 run topological_nav tour_manager"'
+    output="screen"/>
+</launch>
