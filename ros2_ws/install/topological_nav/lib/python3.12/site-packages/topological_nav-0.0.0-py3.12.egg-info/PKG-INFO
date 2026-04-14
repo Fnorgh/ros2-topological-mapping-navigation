@@ -1,0 +1,8 @@
+Metadata-Version: 2.1
+Name: topological-nav
+Version: 0.0.0
+Summary: Topological mapping and autonomous tour navigation with TurtleBot 4
+Maintainer: todo
+Maintainer-email: todo@todo.todo
+License: TODO: License declaration
+Provides-Extra: test
