@@ -2,7 +2,7 @@
 # ─────────────────────────────────────────────
 #  CHANGE THESE FOR YOUR ROBOT
 # ─────────────────────────────────────────────
-ROBOT_NAME="snapper"
+ROBOT_NAME="galapagos"
 ROS_DOMAIN_ID="4"
 ROS_DISCOVERY_SERVER=";;;;10.194.16.39:11811;"
 # ─────────────────────────────────────────────
@@ -28,7 +28,7 @@ echo "==> Opening terminals..."
 # Terminal 1: Person follow + gesture node
 gnome-terminal --title="Person Follow" -- bash -c "
 $ROS_ENV
-ros2 launch topological_nav person_follow.launch.xml robot_name:=$ROBOT_NAME
+ros2 launch topological_nav person_follow.launch.xml robot_name:=$ROBOT_NAME venv_python:=$WS/venv/bin/python
 exec bash"
 
 sleep 3
