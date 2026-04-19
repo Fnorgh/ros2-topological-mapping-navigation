@@ -25,7 +25,7 @@ source $WS/install/setup.bash
 
 echo "==> Opening terminals..."
 
-# Terminal 1: Person follow + gesture node
+# Terminal 1: Person follow node + TTS node
 gnome-terminal --title="Person Follow" -- bash -c "
 $ROS_ENV
 ros2 launch topological_nav person_follow.launch.xml robot_name:=$ROBOT_NAME
@@ -41,10 +41,24 @@ echo 'Enabling person following...'
 ros2 topic pub /person_follow_active std_msgs/Bool 'data: true'
 exec bash"
 
-# Terminal 3: Speak listener (audio plays on this computer)
+# Terminal 3: QR node — scans camera, activates when /qr_scan_active is True
+# (triggered automatically after robot stops moving for 5 seconds)
+gnome-terminal --title="QR Node" -- bash -c "
+$ROS_ENV
+ros2 run topological_nav qr_node
+exec bash"
+
+# Terminal 4: QR display node — prints task1/task2/task3 on this laptop
+gnome-terminal --title="QR Display" -- bash -c "
+$ROS_ENV
+ros2 run topological_nav qr_display_node
+exec bash"
+
+# Terminal 5: Speak listener — audio output on this laptop
 gnome-terminal --title="Speak Listener" -- bash -c "
 $ROS_ENV
 python3 $REPO/ros2_ws/src/topological_nav/topological_nav/speak_listener.py
 exec bash"
 
-echo "==> Person follow terminals launched."
+echo "==> All terminals launched."
+echo "==> Robot will follow a person. After stopping for 5 s, QR scanner activates automatically."

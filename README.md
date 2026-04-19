@@ -240,6 +240,34 @@ Show 1, 2, or 3 fingers to the camera to navigate to landmarks. Wave to return h
 
 ---
 
+## QR Code Scanning
+
+The robot camera detects QR codes and outputs the result on the connected laptop.
+
+QR codes should contain: `task1`, `task2`, or `task3`
+
+### Run
+
+**Terminal 1 — QR node (reads camera):**
+```bash
+unset ROS_LOCALHOST_ONLY && export ROS_DOMAIN_ID=4 && export ROS_DISCOVERY_SERVER=";;;;10.194.16.39:11811;" && export ROS_SUPER_CLIENT=True && source ~/robotics/ros2-topological-mapping-navigation/ros2_ws/install/setup.bash && ros2 run topological_nav qr_node
+```
+
+**Terminal 2 — QR display node (laptop output):**
+```bash
+unset ROS_LOCALHOST_ONLY && export ROS_DOMAIN_ID=4 && export ROS_DISCOVERY_SERVER=";;;;10.194.16.39:11811;" && export ROS_SUPER_CLIENT=True && source ~/robotics/ros2-topological-mapping-navigation/ros2_ws/install/setup.bash && ros2 run topological_nav qr_display_node
+```
+
+Hold a QR code in front of the camera — the laptop will print `*** QR OUTPUT: task1 ***` (etc.).
+
+### Test without camera
+
+```bash
+ros2 topic pub --once /qr_detected std_msgs/msg/String "{data: task1}"
+```
+
+---
+
 ## Person Follow Mode
 
 The robot detects people via the OAK-D camera (YOLOv8n) and drives toward them, announcing "feet detected" on the connecting computer.

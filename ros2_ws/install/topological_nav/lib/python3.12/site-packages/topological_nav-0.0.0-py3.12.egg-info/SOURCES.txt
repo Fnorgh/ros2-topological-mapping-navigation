@@ -18,6 +18,7 @@ test/test_pep257.py
 topological_nav/__init__.py
 topological_nav/gesture_node.py
 topological_nav/person_follow_node.py
+topological_nav/qr_display_node.py
 topological_nav/qr_node.py
 topological_nav/reactive_controller.py
 topological_nav/speak_listener.py
