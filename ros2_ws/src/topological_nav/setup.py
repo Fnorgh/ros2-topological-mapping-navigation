@@ -35,6 +35,8 @@ setup(
             'person_follow_node  = topological_nav.person_follow_node:main',
             'speak_listener      = topological_nav.speak_listener:main',
             'qr_display_node     = topological_nav.qr_display_node:main',
+            'landmark_saver_node  = topological_nav.landmark_saver_node:main',
+            'set_initial_pose     = topological_nav.set_initial_pose:main',
         ],
     },
 )

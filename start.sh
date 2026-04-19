@@ -2,9 +2,9 @@
 # ─────────────────────────────────────────────
 #  CHANGE THESE TWO VALUES FOR YOUR ROBOT
 # ─────────────────────────────────────────────
-ROBOT_NAME="snapper"
-ROS_DOMAIN_ID="4"
-ROS_DISCOVERY_SERVER=";;;;10.194.16.39:11811;"
+ROBOT_NAME="softshell"
+ROS_DOMAIN_ID="9"
+ROS_DISCOVERY_SERVER=";;;;;;;;;10.194.16.59:11811;"
 # ─────────────────────────────────────────────
 
 WS=~/robotics/ros2-topological-mapping-navigation/ros2_ws

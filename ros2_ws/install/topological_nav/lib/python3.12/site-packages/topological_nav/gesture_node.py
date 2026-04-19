@@ -28,6 +28,8 @@ GESTURE_NONE  = 0
 GESTURE_ONE   = 1
 GESTURE_TWO   = 2
 GESTURE_THREE = 3
+GESTURE_FOUR  = 4
+GESTURE_FIVE  = 5
 GESTURE_WAVE  = 10
 
 # Finger tip and PIP landmark IDs (MediaPipe hand model)
@@ -84,7 +86,7 @@ class GestureNode(Node):
                 gesture = GESTURE_WAVE
             else:
                 count = self._count_fingers(lm)
-                if count in (1, 2, 3):
+                if count in (1, 2, 3, 4, 5):
                     gesture = count
 
         self._update_buffer(gesture)

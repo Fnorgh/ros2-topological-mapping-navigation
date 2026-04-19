@@ -2,9 +2,9 @@
 # ─────────────────────────────────────────────
 #  CHANGE THESE FOR YOUR ROBOT
 # ─────────────────────────────────────────────
-ROBOT_NAME="snapper"
-ROS_DOMAIN_ID="4"
-ROS_DISCOVERY_SERVER=";;;;10.194.16.39:11811;"
+ROBOT_NAME="softshell"
+ROS_DOMAIN_ID="9"
+ROS_DISCOVERY_SERVER=";;;;;;;;;10.194.16.59:11811;"
 # ─────────────────────────────────────────────
 
 WS=~/robotics/ros2-topological-mapping-navigation/ros2_ws
@@ -20,27 +20,49 @@ echo "==> Pulling latest changes..."
 cd $REPO && git pull
 
 echo "==> Building package..."
-cd $WS && colcon build --packages-select topological_nav
+cd $WS && colcon build --base-paths src --packages-select topological_nav
 source $WS/install/setup.bash
 
-echo "==> Opening terminals..."
+echo "==> Opening mapping terminals..."
 
-# Terminal 1: SLAM + RViz + gesture + QR + tour manager
-gnome-terminal --title="Mapping" -- bash -c "
+# Terminal 1: SLAM — builds the occupancy grid as you drive
+gnome-terminal --title="SLAM" -- bash -c "
 $ROS_ENV
-ros2 launch topological_nav mapping.launch.xml robot_name:=$ROBOT_NAME
+ros2 launch turtlebot4_navigation slam.launch.py
 exec bash"
 
 sleep 3
 
-# Terminal 2: Keyboard teleop
+# Terminal 2: RViz — watch the map being built
+gnome-terminal --title="RViz" -- bash -c "
+$ROS_ENV
+ros2 launch turtlebot4_viz view_robot.launch.py
+exec bash"
+
+sleep 2
+
+# Terminal 3: Teleop — drive the robot
 gnome-terminal --title="Teleop" -- bash -c "
 $ROS_ENV
-ros2 daemon stop && ros2 daemon start
 ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true
 exec bash"
 
-echo "==> Mapping terminals launched."
-echo "    Drive the robot around to build the map."
-echo "    When done, save the map with:"
-echo "    ros2 run nav2_map_server map_saver_cli -f ~/map"
+sleep 2
+
+# Terminal 4: Mark home position and save map
+gnome-terminal --title="Mark Home + Save" -- bash -c "
+$ROS_ENV
+ros2 run topological_nav landmark_saver_node
+exec bash"
+
+echo ""
+echo "══════════════════════════════════════════════════"
+echo "  MAPPING PHASE"
+echo "  1. Drive around the entire area to build the map"
+echo "  2. Return to your START position"
+echo "  3. In the 'Mark Home + Save' terminal:"
+echo "       h  → mark current spot as Home"
+echo "       s  → save ~/map.yaml + landmarks.yaml"
+echo ""
+echo "  When done, run:  ./start_landmarks.sh"
+echo "══════════════════════════════════════════════════"

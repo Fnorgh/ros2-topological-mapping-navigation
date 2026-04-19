@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//home/louq0001/.ros/log/**)"
+    ]
+  }
+}

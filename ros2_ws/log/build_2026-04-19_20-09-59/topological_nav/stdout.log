@@ -1,0 +1,28 @@
+running develop
+running egg_info
+writing topological_nav.egg-info/PKG-INFO
+writing dependency_links to topological_nav.egg-info/dependency_links.txt
+writing entry points to topological_nav.egg-info/entry_points.txt
+writing requirements to topological_nav.egg-info/requires.txt
+writing top-level names to topological_nav.egg-info/top_level.txt
+reading manifest file 'topological_nav.egg-info/SOURCES.txt'
+writing manifest file 'topological_nav.egg-info/SOURCES.txt'
+running build_ext
+Creating /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/python3.12/site-packages/topological-nav.egg-link (link to .)
+Installing gesture_node script to /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/topological_nav
+Installing landmark_saver_node script to /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/topological_nav
+Installing person_follow_node script to /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/topological_nav
+Installing qr_display_node script to /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/topological_nav
+Installing qr_node script to /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/topological_nav
+Installing reactive_controller script to /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/topological_nav
+Installing speak_listener script to /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/topological_nav
+Installing tour_manager script to /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/topological_nav
+Installing tts_node script to /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/topological_nav
+
+Installed /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav
+running symlink_data
+symbolically linking /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav/resource/topological_nav -> /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/share/ament_index/resource_index/packages
+symbolically linking /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav/package.xml -> /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/share/topological_nav
+symbolically linking /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav/launch/topological_nav.launch.xml -> /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/share/topological_nav/launch
+symbolically linking /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav/launch/mapping.launch.xml -> /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/share/topological_nav/launch
+symbolically linking /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav/launch/person_follow.launch.xml -> /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/share/topological_nav/launch

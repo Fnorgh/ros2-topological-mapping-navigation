@@ -1,0 +1,31 @@
+running egg_info
+writing ../../build/topological_nav/topological_nav.egg-info/PKG-INFO
+writing dependency_links to ../../build/topological_nav/topological_nav.egg-info/dependency_links.txt
+writing entry points to ../../build/topological_nav/topological_nav.egg-info/entry_points.txt
+writing requirements to ../../build/topological_nav/topological_nav.egg-info/requires.txt
+writing top-level names to ../../build/topological_nav/topological_nav.egg-info/top_level.txt
+reading manifest file '../../build/topological_nav/topological_nav.egg-info/SOURCES.txt'
+writing manifest file '../../build/topological_nav/topological_nav.egg-info/SOURCES.txt'
+running build
+running build_py
+copying topological_nav/set_initial_pose.py -> /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav/build/lib/topological_nav
+running install
+running install_lib
+copying /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav/build/lib/topological_nav/set_initial_pose.py -> /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/python3.12/site-packages/topological_nav
+byte-compiling /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/python3.12/site-packages/topological_nav/set_initial_pose.py to set_initial_pose.cpython-312.pyc
+running install_data
+running install_egg_info
+removing '/home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/python3.12/site-packages/topological_nav-0.0.0-py3.12.egg-info' (and everything under it)
+Copying ../../build/topological_nav/topological_nav.egg-info to /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/python3.12/site-packages/topological_nav-0.0.0-py3.12.egg-info
+running install_scripts
+Installing gesture_node script to /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/topological_nav
+Installing landmark_saver_node script to /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/topological_nav
+Installing person_follow_node script to /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/topological_nav
+Installing qr_display_node script to /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/topological_nav
+Installing qr_node script to /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/topological_nav
+Installing reactive_controller script to /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/topological_nav
+Installing set_initial_pose script to /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/topological_nav
+Installing speak_listener script to /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/topological_nav
+Installing tour_manager script to /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/topological_nav
+Installing tts_node script to /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/topological_nav
+writing list of installed files to '/home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/build/topological_nav/install.log'

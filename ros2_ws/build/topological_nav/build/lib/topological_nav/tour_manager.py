@@ -1,4 +1,6 @@
 import math
+import os
+import yaml
 
 import rclpy
 from rclpy.node import Node
@@ -9,18 +11,28 @@ from geometry_msgs.msg import PoseStamped
 from nav2_msgs.action import NavigateToPose
 
 # ---------------------------------------------------------------------------
-# Landmark configuration
+# Landmark configuration — loaded from landmarks.yaml (written by landmark_saver_node)
 # ---------------------------------------------------------------------------
 
-# Fill in x, y (meters) and yaw (radians) after the manual mapping run.
-# These are the robot poses at each landmark in the /map frame.
-LANDMARK_POSITIONS = {
-    1: (0.0, 0.0, 0.0),   # TODO: set after mapping
-    2: (0.0, 0.0, 0.0),   # TODO: set after mapping
-    3: (0.0, 0.0, 0.0),   # TODO: set after mapping
-}
+LANDMARKS_FILE = os.path.expanduser(
+    '~/robotics/ros2-topological-mapping-navigation/landmarks.yaml'
+)
 
-HOME_POSITION = (0.0, 0.0, 0.0)  # TODO: set after mapping
+
+def _load_landmarks():
+    if os.path.exists(LANDMARKS_FILE):
+        with open(LANDMARKS_FILE) as f:
+            data = yaml.safe_load(f) or {}
+        positions = {}
+        for k, v in data.get('landmarks', {}).items():
+            positions[int(k)] = tuple(v)
+        home = tuple(data['home']) if data.get('home') else (0.0, 0.0, 0.0)
+        return positions, home
+    # Fallback if file not yet created
+    return {1: (0.0, 0.0, 0.0), 2: (0.0, 0.0, 0.0), 3: (0.0, 0.0, 0.0)}, (0.0, 0.0, 0.0)
+
+
+LANDMARK_POSITIONS, HOME_POSITION = _load_landmarks()
 
 # QR code content → spoken description.
 # The string stored on each physical QR code is the key here.
