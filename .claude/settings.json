@@ -1,7 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "Read(//home/louq0001/.ros/log/**)"
+      "Read(//home/louq0001/.ros/log/**)",
+      "Read(//home/louq0001/**)",
+      "Bash(ros2 topic *)",
+      "Bash(ros2 pkg *)",
+      "Bash(dpkg -l)",
+      "Bash(xargs cat *)"
+    ],
+    "additionalDirectories": [
+      "/opt/ros/jazzy/share/turtlebot4_navigation/config"
     ]
   }
 }

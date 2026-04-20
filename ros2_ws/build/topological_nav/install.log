@@ -25,6 +25,8 @@
 /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/share/topological_nav/launch/topological_nav.launch.xml
 /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/share/topological_nav/launch/mapping.launch.xml
 /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/share/topological_nav/launch/person_follow.launch.xml
+/home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/share/topological_nav/launch/localization_nav2.launch.py
+/home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/share/topological_nav/config/nav2.yaml
 /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/python3.12/site-packages/topological_nav-0.0.0-py3.12.egg-info/entry_points.txt
 /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/python3.12/site-packages/topological_nav-0.0.0-py3.12.egg-info/SOURCES.txt
 /home/louq0001/robotics/ros2-topological-mapping-navigation/ros2_ws/install/topological_nav/lib/python3.12/site-packages/topological_nav-0.0.0-py3.12.egg-info/zip-safe

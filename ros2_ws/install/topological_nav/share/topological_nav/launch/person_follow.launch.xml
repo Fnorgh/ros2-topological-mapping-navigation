@@ -6,17 +6,7 @@
     cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ros2 launch turtlebot4_viz view_robot.launch.py"'
     output="screen"/>
 
-  <!-- Gesture node — 4 fingers = go to landmark, 5 fingers = go home -->
-  <executable
-    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.gesture_node"'
-    output="screen"/>
-
-  <!-- QR code scanner -->
-  <executable
-    cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ros2 run topological_nav qr_node"'
-    output="screen"/>
-
-  <!-- Person follow + full state machine -->
+  <!-- Person follow + state machine (spawns gesture_node / qr_node on demand) -->
   <executable
     cmd='bash -lc "printf \"%s\" \"$(var robot_name)\" | robot-setup.sh &amp;&amp; unset ROS_LOCALHOST_ONLY &amp;&amp; ~/robotics/ros2-topological-mapping-navigation/ros2_ws/venv/bin/python -m topological_nav.person_follow_node"'
     output="screen"/>

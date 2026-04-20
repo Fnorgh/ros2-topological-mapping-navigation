@@ -14,6 +14,10 @@ setup(
             'launch/topological_nav.launch.xml',
             'launch/mapping.launch.xml',
             'launch/person_follow.launch.xml',
+            'launch/localization_nav2.launch.py',
+        ]),
+        ('share/' + package_name + '/config', [
+            'config/nav2.yaml',
         ]),
     ],
     install_requires=['setuptools'],

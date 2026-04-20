@@ -8,6 +8,8 @@ setup.py
 ../../build/topological_nav/topological_nav.egg-info/requires.txt
 ../../build/topological_nav/topological_nav.egg-info/top_level.txt
 ../../build/topological_nav/topological_nav.egg-info/zip-safe
+config/nav2.yaml
+launch/localization_nav2.launch.py
 launch/mapping.launch.xml
 launch/person_follow.launch.xml
 launch/topological_nav.launch.xml

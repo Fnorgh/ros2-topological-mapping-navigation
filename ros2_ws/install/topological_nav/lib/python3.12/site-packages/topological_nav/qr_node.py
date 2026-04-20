@@ -1,12 +1,9 @@
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String, Bool
+from std_msgs.msg import String
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import cv2
-
-# Published to /qr_detected (String) when a QR code is read.
-# Scanning is only active while /qr_scan_active (Bool True) has been received.
 
 
 class QRNode(Node):
@@ -18,21 +15,13 @@ class QRNode(Node):
 
         self.create_subscription(
             Image, '/oakd/rgb/preview/image_raw', self.image_callback, 10)
-        self.create_subscription(
-            Bool, '/qr_scan_active', self.active_callback, 10)
 
-        self.bridge   = CvBridge()
-        self.detector = cv2.QRCodeDetector()
-        self.active   = False
+        self.bridge      = CvBridge()
+        self.detector    = cv2.QRCodeDetector()
+        self.active      = True   # active immediately — parent kills this process when done
         self.last_result = ''
 
-        self.get_logger().info('QR node ready — waiting for /qr_scan_active')
-
-    def active_callback(self, msg):
-        self.active = msg.data
-        if self.active:
-            self.last_result = ''
-            self.get_logger().info('QR scanning activated')
+        self.get_logger().info('QR node ready — scanning')
 
     def image_callback(self, msg):
         if not self.active:
